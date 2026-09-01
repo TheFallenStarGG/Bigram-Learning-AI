@@ -112,6 +112,14 @@ workflows already defined by the project. Do **not** create a new workflow,
 call `configureWorkflow`, or replace these with a workflow named `Start
 application`, `Project`, or `Bigram AI Webview`.
 
+The files under `artifacts/*/.replit-artifact/artifact.toml` are the source of
+the imported services. If the managed workflows are not visible immediately
+after import, re-check the registered artifacts/workflows after metadata
+registration finishes. Do not work around that delay by creating a manual Vite
+workflow, using port `5173`, or starting the frontend outside its artifact
+workflow; the managed service must receive its configured port `26237` and
+root `/` routing.
+
 1. Install the locked dependencies with `pnpm install --frozen-lockfile`.
 2. Use the existing Replit-managed workflow named
    `artifacts/bigram-ai: web` for the root web preview. Restart it from the
