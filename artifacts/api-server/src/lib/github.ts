@@ -2,6 +2,15 @@ import { ReplitConnectors } from "@replit/connectors-sdk";
 
 const connectors = new ReplitConnectors();
 
+export const SNAPSHOT_REPOSITORY_URL =
+  "https://github.com/TheFallenStarGG/Bigram-Learning-AI-Snapshots";
+
+export const SNAPSHOT_REPOSITORY = {
+  owner: "TheFallenStarGG",
+  repository: "Bigram-Learning-AI-Snapshots",
+  branch: "main",
+} as const;
+
 type GithubRequestInit = {
   method?: string;
   headers?: Record<string, string>;
@@ -61,9 +70,6 @@ function repositoryPath(owner: string, repository: string, suffix: string) {
 }
 
 export async function pushSnapshotToGithub(input: {
-  owner: string;
-  repository: string;
-  branch: string;
   filename: string;
   content: string;
 }) {
@@ -74,8 +80,8 @@ export async function pushSnapshotToGithub(input: {
 
   await githubRequest(
     repositoryPath(
-      input.owner,
-      input.repository,
+      SNAPSHOT_REPOSITORY.owner,
+      SNAPSHOT_REPOSITORY.repository,
       `/contents/${filePath}`,
     ),
     {
@@ -84,22 +90,18 @@ export async function pushSnapshotToGithub(input: {
       body: JSON.stringify({
         message: `Save model snapshot ${input.filename}`,
         content: Buffer.from(input.content, "utf8").toString("base64"),
-        branch: input.branch,
+        branch: SNAPSHOT_REPOSITORY.branch,
       }),
     },
   );
 }
 
-export async function getLatestSnapshotFromGithub(input: {
-  owner: string;
-  repository: string;
-  branch: string;
-}) {
+export async function getLatestSnapshotFromGithub() {
   const directory = await githubRequest<GithubContent[]>(
     repositoryPath(
-      input.owner,
-      input.repository,
-      `/contents/snapshots?ref=${encodeURIComponent(input.branch)}`,
+      SNAPSHOT_REPOSITORY.owner,
+      SNAPSHOT_REPOSITORY.repository,
+      `/contents/snapshots?ref=${encodeURIComponent(SNAPSHOT_REPOSITORY.branch)}`,
     ),
     undefined,
     { allowNotFound: true },
@@ -120,9 +122,9 @@ export async function getLatestSnapshotFromGithub(input: {
 
   const file = await githubRequest<GithubContent>(
     repositoryPath(
-      input.owner,
-      input.repository,
-      `/contents/snapshots/${encodeURIComponent(latestFile.name)}?ref=${encodeURIComponent(input.branch)}`,
+      SNAPSHOT_REPOSITORY.owner,
+      SNAPSHOT_REPOSITORY.repository,
+      `/contents/snapshots/${encodeURIComponent(latestFile.name)}?ref=${encodeURIComponent(SNAPSHOT_REPOSITORY.branch)}`,
     ),
   );
 

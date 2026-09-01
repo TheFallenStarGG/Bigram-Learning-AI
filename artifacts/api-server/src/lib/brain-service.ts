@@ -8,16 +8,17 @@ import {
   githubSettingsTable,
   modelSnapshotsTable,
 } from "@workspace/db";
-import { getLatestSnapshotFromGithub, pushSnapshotToGithub } from "./github";
+import {
+  SNAPSHOT_REPOSITORY,
+  SNAPSHOT_REPOSITORY_URL,
+  getLatestSnapshotFromGithub,
+  pushSnapshotToGithub,
+} from "./github";
 import { logger } from "./logger";
 
 const START = "__START__";
 const END = "__END__";
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
-const DEFAULT_GITHUB_OWNER = "TheFallenStarGG";
-const DEFAULT_GITHUB_REPOSITORY = "Bigram-Learning-AI-Snapshots";
-const DEFAULT_GITHUB_BRANCH = "main";
-
 type Vocabulary = Record<string, number>;
 type Transitions = Record<string, Record<string, number>>;
 
@@ -168,24 +169,24 @@ async function ensureRows() {
       .insert(githubSettingsTable)
       .values({
         id: 1,
-        owner: DEFAULT_GITHUB_OWNER,
-        repository: DEFAULT_GITHUB_REPOSITORY,
-        branch: DEFAULT_GITHUB_BRANCH,
+        owner: SNAPSHOT_REPOSITORY.owner,
+        repository: SNAPSHOT_REPOSITORY.repository,
+        branch: SNAPSHOT_REPOSITORY.branch,
         configured: true,
       })
       .onConflictDoNothing({ target: githubSettingsTable.id });
   } else if (
     !github.configured ||
-    !github.owner ||
-    !github.repository ||
-    !github.branch
+    github.owner !== SNAPSHOT_REPOSITORY.owner ||
+    github.repository !== SNAPSHOT_REPOSITORY.repository ||
+    github.branch !== SNAPSHOT_REPOSITORY.branch
   ) {
     await db
       .update(githubSettingsTable)
       .set({
-        owner: DEFAULT_GITHUB_OWNER,
-        repository: DEFAULT_GITHUB_REPOSITORY,
-        branch: DEFAULT_GITHUB_BRANCH,
+        owner: SNAPSHOT_REPOSITORY.owner,
+        repository: SNAPSHOT_REPOSITORY.repository,
+        branch: SNAPSHOT_REPOSITORY.branch,
         configured: true,
         updatedAt: new Date(),
       })
@@ -367,9 +368,6 @@ export async function createSnapshot(): Promise<PublicSnapshot> {
   if (github.configured) {
     try {
       await pushSnapshotToGithub({
-        owner: github.owner,
-        repository: github.repository,
-        branch: github.branch,
         filename,
         content: JSON.stringify(snapshot, null, 2),
       });
@@ -411,7 +409,7 @@ export async function getGithubSettings() {
     configured: github.configured,
     connected: github.configured,
     message: github.configured
-      ? "Private GitHub backups are permanently linked."
+      ? `Private GitHub backups are permanently linked to ${SNAPSHOT_REPOSITORY_URL}.`
       : "Private GitHub backups are not configured.",
   };
 }
@@ -421,13 +419,16 @@ export async function updateGithubSettings(input: {
   repository: string;
   branch: string;
 }) {
-  const owner = input.owner.trim();
-  const repository = input.repository.trim();
-  const branch = input.branch.trim() || "main";
-  const configured = Boolean(owner && repository && branch);
+  void input;
   await db
     .update(githubSettingsTable)
-    .set({ owner, repository, branch, configured, updatedAt: new Date() })
+    .set({
+      owner: SNAPSHOT_REPOSITORY.owner,
+      repository: SNAPSHOT_REPOSITORY.repository,
+      branch: SNAPSHOT_REPOSITORY.branch,
+      configured: true,
+      updatedAt: new Date(),
+    })
     .where(eq(githubSettingsTable.id, 1));
   return getGithubSettings();
 }
@@ -443,11 +444,7 @@ async function syncStateFromLatestRemoteSnapshot() {
   const github = await getGithubRow();
   if (!github.configured) return;
 
-  const latest = await getLatestSnapshotFromGithub({
-    owner: github.owner,
-    repository: github.repository,
-    branch: github.branch,
-  });
+  const latest = await getLatestSnapshotFromGithub();
   if (!latest) return;
 
   let parsed: unknown;
