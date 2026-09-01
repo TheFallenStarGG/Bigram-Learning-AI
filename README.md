@@ -99,11 +99,46 @@ source code. GitHub authentication is handled by the Replit integration.
 Use pnpm, not npm or yarn:
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 ```
 
 The workspace enforces a 1-day minimum package release age as a supply-chain
 protection. Do not disable `minimumReleaseAge` in `pnpm-workspace.yaml`.
+
+## Replit preview setup (for an agent)
+
+When setting up this imported project in Replit, preserve the artifact-owned
+workflows already defined by the project. Do **not** create a new workflow,
+call `configureWorkflow`, or replace these with a workflow named `Start
+application`, `Project`, or `Bigram AI Webview`.
+
+1. Install the locked dependencies with `pnpm install --frozen-lockfile`.
+2. Use the existing Replit-managed workflow named
+   `artifacts/bigram-ai: web` for the root web preview. Restart it from the
+   Replit workflow controls or with the workflow restart tool; do not run the
+   Vite command manually on a different port.
+3. Start or restart the existing `artifacts/api-server: API Server` workflow as
+   well. The frontend calls the API through `/api`, so starting only the
+   frontend produces a page with failed data requests.
+4. If `/api/healthz` returns `200` but model endpoints return a database error
+   saying that `brain_state`, `chat_messages`, or `model_snapshots` is missing,
+   use the development-only schema command below:
+
+   ```bash
+   pnpm --filter @workspace/db run push
+   ```
+
+   This uses Replit's provisioned development database. Never set
+   `DATABASE_URL` manually, add startup-time DDL, or run this against
+   production.
+5. Verify the root preview at `/` and the API health endpoint at
+   `/api/healthz`. Start `artifacts/mockup-sandbox: Component Preview Server`
+   only when the Canvas component preview is needed.
+
+The artifact workflows inject the correct `PORT` and `BASE_PATH` values and
+provide the path-based preview routing. The existing artifact metadata is the
+source of truth; do not edit the `artifact.toml` files or create replacement
+workflow configuration.
 
 ## Replit workflows
 
