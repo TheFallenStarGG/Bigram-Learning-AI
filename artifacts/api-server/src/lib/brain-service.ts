@@ -30,6 +30,8 @@ type BrainData = {
   lastSnapshotAt: Date | null;
 };
 
+let remoteSnapshotSyncPromise: Promise<void> | null = null;
+
 export type BrainOverview = {
   vocabulary: number;
   bigrams: number;
@@ -195,6 +197,7 @@ async function ensureRows() {
 }
 
 async function getState() {
+  await ensureRemoteSnapshotLoaded();
   await ensureRows();
   const [state] = await db
     .select()
@@ -260,6 +263,7 @@ export async function getOverview(): Promise<BrainOverview> {
 }
 
 export async function getMessages(): Promise<PublicMessage[]> {
+  await ensureRemoteSnapshotLoaded();
   const rows = await db
     .select()
     .from(chatMessagesTable)
@@ -273,7 +277,7 @@ export async function getMessages(): Promise<PublicMessage[]> {
 }
 
 export async function sendMessage(prompt: string) {
-  await syncStateFromLatestRemoteSnapshot();
+  await ensureRemoteSnapshotLoaded();
   const state = await getState();
   learn(state, prompt);
   const response = generate(state, prompt);
@@ -434,10 +438,24 @@ export async function updateGithubSettings(input: {
 }
 
 export function startSnapshotScheduler() {
+  void ensureRemoteSnapshotLoaded();
   const timer = setInterval(() => {
     void createSnapshot().catch(() => undefined);
   }, SNAPSHOT_INTERVAL_MS);
   timer.unref();
+}
+
+function ensureRemoteSnapshotLoaded() {
+  if (!remoteSnapshotSyncPromise) {
+    remoteSnapshotSyncPromise = syncStateFromLatestRemoteSnapshot().catch((error) => {
+      logger.error(
+        { err: error },
+        "Could not load the latest model snapshot from GitHub",
+      );
+      remoteSnapshotSyncPromise = null;
+    });
+  }
+  return remoteSnapshotSyncPromise;
 }
 
 async function syncStateFromLatestRemoteSnapshot() {
