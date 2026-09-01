@@ -1,0 +1,215 @@
+{
+  "format": "bigram-ai/v1",
+  "createdAt": "2026-09-01T19:53:03.331Z",
+  "model": {
+    "vocabulary": {
+      "?": 1,
+      "i": 2,
+      "no": 3,
+      "did": 1,
+      "lol": 1,
+      "you": 2,
+      "said": 1,
+      "that": 1,
+      "what": 1,
+      "yeet": 1,
+      "again": 2,
+      "didnt": 1,
+      "first": 1,
+      "hello": 2,
+      "howdy": 1
+    },
+    "transitions": {
+      "?": {
+        "__END__": 1
+      },
+      "i": {
+        "did": 1,
+        "said": 1
+      },
+      "no": {
+        "i": 1,
+        "you": 2
+      },
+      "did": {
+        "__END__": 1
+      },
+      "lol": {
+        "__END__": 1
+      },
+      "you": {
+        "didnt": 1,
+        "__END__": 1
+      },
+      "said": {
+        "that": 1
+      },
+      "that": {
+        "first": 1
+      },
+      "what": {
+        "?": 1
+      },
+      "yeet": {
+        "__END__": 1
+      },
+      "again": {
+        "what": 1,
+        "__END__": 1
+      },
+      "didnt": {
+        "__END__": 1
+      },
+      "first": {
+        "__END__": 1
+      },
+      "hello": {
+        "again": 1,
+        "__END__": 1
+      },
+      "howdy": {
+        "__END__": 1
+      },
+      "__START__": {
+        "i": 1,
+        "no": 3,
+        "lol": 1,
+        "yeet": 1,
+        "again": 1,
+        "hello": 2,
+        "howdy": 1
+      }
+    },
+    "messageCount": 10,
+    "learningStartedAt": "2026-09-01T17:44:24.959Z"
+  },
+  "messages": [
+    {
+      "id": "5bea1fbe-fa49-457e-a09c-607c791b04c7",
+      "role": "user",
+      "content": "I said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "cf51f535-5363-4956-97e4-6a6d44efb20c",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "7d5cf538-956f-4957-ba86-ab0e30292a52",
+      "role": "user",
+      "content": "No you",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "0e89334f-53d5-4692-b453-bef44af548d9",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "eff57001-b8d9-46b8-99e4-3788a08b964f",
+      "role": "user",
+      "content": "Hello again",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "2d7b68d3-9bca-431c-9440-080cc39bed85",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "e38a186d-d48b-4569-9d1a-4901647d2e6c",
+      "role": "user",
+      "content": "No i did",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    },
+    {
+      "id": "2f845f04-b058-4fb2-a26a-5dfb239440f1",
+      "role": "assistant",
+      "content": "no you",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    },
+    {
+      "id": "ac304878-7019-46d7-9e49-1b64239097ac",
+      "role": "user",
+      "content": "Yeet",
+      "createdAt": "2026-09-01T19:52:23.132Z"
+    },
+    {
+      "id": "b0bb41fc-4526-4975-a476-febf6835043e",
+      "role": "assistant",
+      "content": "hello again",
+      "createdAt": "2026-09-01T19:52:23.132Z"
+    },
+    {
+      "id": "64d27610-58d5-4c24-9cc5-46aa8fe816fd",
+      "role": "user",
+      "content": "Hello",
+      "createdAt": "2026-09-01T19:52:27.946Z"
+    },
+    {
+      "id": "8846fc14-ecbd-4549-a4dc-30b45ec0c786",
+      "role": "assistant",
+      "content": "again",
+      "createdAt": "2026-09-01T19:52:27.946Z"
+    },
+    {
+      "id": "fd746aa5-db38-4eed-b565-a8aac8e43442",
+      "role": "user",
+      "content": "Again what?",
+      "createdAt": "2026-09-01T19:52:39.171Z"
+    },
+    {
+      "id": "89aadc9a-0fe2-423d-ac0c-f3b70e39e094",
+      "role": "assistant",
+      "content": "no i said that first",
+      "createdAt": "2026-09-01T19:52:39.171Z"
+    },
+    {
+      "id": "0cd2abc7-8e0c-4ba6-b940-745124737557",
+      "role": "user",
+      "content": "No you didnt",
+      "createdAt": "2026-09-01T19:52:46.200Z"
+    },
+    {
+      "id": "1463f103-ed52-4dbd-b67a-fc5e25007f57",
+      "role": "assistant",
+      "content": "yeet",
+      "createdAt": "2026-09-01T19:52:46.200Z"
+    },
+    {
+      "id": "88e8d7fd-a3f4-455c-af8c-7063d68656e7",
+      "role": "user",
+      "content": "Lol",
+      "createdAt": "2026-09-01T19:52:51.083Z"
+    },
+    {
+      "id": "59b4c4c8-91eb-4486-8d9e-ba0e0cf58221",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T19:52:51.083Z"
+    },
+    {
+      "id": "fed15711-da67-46fc-8e96-6023e978d174",
+      "role": "user",
+      "content": "Howdy",
+      "createdAt": "2026-09-01T19:52:56.038Z"
+    },
+    {
+      "id": "ccd19cd6-31e0-4e98-945e-f7ef5789f11e",
+      "role": "assistant",
+      "content": "yeet",
+      "createdAt": "2026-09-01T19:52:56.038Z"
+    }
+  ],
+  "github": {
+    "configured": true,
+    "owner": "TheFallenStarGG",
+    "repository": "Bigram-Learning-AI-Snapshots",
+    "branch": "main",
+    "connected": true
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "format": "bigram-ai/v1",
+  "createdAt": "2026-09-01T19:51:19.576Z",
+  "model": {
+    "vocabulary": {
+      "i": 2,
+      "no": 2,
+      "did": 1,
+      "you": 1,
+      "said": 1,
+      "that": 1,
+      "again": 1,
+      "first": 1,
+      "hello": 1
+    },
+    "transitions": {
+      "i": {
+        "did": 1,
+        "said": 1
+      },
+      "no": {
+        "i": 1,
+        "you": 1
+      },
+      "did": {
+        "__END__": 1
+      },
+      "you": {
+        "__END__": 1
+      },
+      "said": {
+        "that": 1
+      },
+      "that": {
+        "first": 1
+      },
+      "again": {
+        "__END__": 1
+      },
+      "first": {
+        "__END__": 1
+      },
+      "hello": {
+        "again": 1
+      },
+      "__START__": {
+        "i": 1,
+        "no": 2,
+        "hello": 1
+      }
+    },
+    "messageCount": 4,
+    "learningStartedAt": "2026-09-01T17:44:24.959Z"
+  },
+  "messages": [
+    {
+      "id": "5bea1fbe-fa49-457e-a09c-607c791b04c7",
+      "role": "user",
+      "content": "I said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "cf51f535-5363-4956-97e4-6a6d44efb20c",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "7d5cf538-956f-4957-ba86-ab0e30292a52",
+      "role": "user",
+      "content": "No you",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "0e89334f-53d5-4692-b453-bef44af548d9",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "eff57001-b8d9-46b8-99e4-3788a08b964f",
+      "role": "user",
+      "content": "Hello again",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "2d7b68d3-9bca-431c-9440-080cc39bed85",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "e38a186d-d48b-4569-9d1a-4901647d2e6c",
+      "role": "user",
+      "content": "No i did",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    },
+    {
+      "id": "2f845f04-b058-4fb2-a26a-5dfb239440f1",
+      "role": "assistant",
+      "content": "no you",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    }
+  ],
+  "github": {
+    "configured": true,
+    "owner": "TheFallenStarGG",
+    "repository": "Bigram-Learning-AI-Snapshots",
+    "branch": "main",
+    "connected": true
+  }
+}
