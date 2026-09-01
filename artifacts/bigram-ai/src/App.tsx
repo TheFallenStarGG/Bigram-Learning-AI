@@ -44,6 +44,7 @@ import NotFound from '@/pages/not-found';
 const queryClient = new QueryClient();
 const SOURCE_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI';
 const SNAPSHOT_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI-Snapshots';
+const DISCLAIMER_STORAGE_KEY = 'bigram-ai-disclaimer-seen';
 
 function formatCount(value: number | undefined) {
   return new Intl.NumberFormat('en-US').format(value ?? 0);
@@ -268,6 +269,62 @@ function GithubPanel() {
   );
 }
 
+function DisclaimerModal() {
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    try {
+      return window.localStorage.getItem(DISCLAIMER_STORAGE_KEY) !== 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const dismiss = () => {
+    try {
+      window.localStorage.setItem(DISCLAIMER_STORAGE_KEY, 'true');
+    } catch {
+      // The notice can still be dismissed if browser storage is unavailable.
+    }
+    setIsOpen(false);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[hsl(var(--foreground)/.42)] px-4 py-6 backdrop-blur-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="disclaimer-title"
+        className="w-full max-w-lg rounded-[26px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-[0_24px_70px_rgba(31,55,48,.18)] sm:p-8"
+      >
+        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/.11)] text-[hsl(var(--primary))]">
+          <Info className="h-5 w-5" />
+        </div>
+        <div className="mono mt-6 text-[10px] uppercase tracking-[.16em] text-[hsl(var(--primary))]">before you begin</div>
+        <h2 id="disclaimer-title" className="display mt-2 text-2xl font-semibold tracking-[-.045em]">A note about Bigram</h2>
+        <p className="mt-4 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
+          Bigram is an AI that learns exclusively from what people teach it. It has no training data beyond the words and phrases shared with it here.
+        </p>
+        <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
+          Repetition is expected. Bigram learns in an intentionally simple, early-stage way—much like a toddler: by copying language, forming connections between words, and gradually discovering how to generate sentences of its own.
+        </p>
+        <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
+          Its responses may be limited or repetitive while it learns. That is a normal part of watching this small model develop.
+        </p>
+        <button
+          type="button"
+          autoFocus
+          onClick={dismiss}
+          className="mt-7 w-full rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] transition hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-[hsl(var(--primary)/.18)]"
+        >
+          Continue to Bigram
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function MobileMenu({ onClose }: { onClose: () => void }) {
   const [location, navigate] = useLocation();
   const goTo = (path: string) => {
@@ -349,7 +406,7 @@ function Router() {
 }
 
 function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /></TooltipProvider></QueryClientProvider>;
+  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /><DisclaimerModal /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;
