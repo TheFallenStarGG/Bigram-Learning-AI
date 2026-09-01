@@ -120,15 +120,22 @@ workflow, using port `5173`, or starting the frontend outside its artifact
 workflow; the managed service must receive its configured port `26237` and
 root `/` routing.
 
-1. Install the locked dependencies with `pnpm install --frozen-lockfile`.
-2. Use the existing Replit-managed workflow named
+1. **Immediately connect GitHub before starting the app.** Check the Replit
+   Integrations view for an added GitHub connection. If it is not already
+   attached, request/connect the GitHub connector through Replit's integration
+   flow right away. Do not ask for or paste a GitHub token, password, or API
+   key into chat. The connector is required for reading the latest
+   `snapshots/` memory and writing future backups, so do not consider setup
+   complete while it is unavailable.
+2. Install the locked dependencies with `pnpm install --frozen-lockfile`.
+3. Use the existing Replit-managed workflow named
    `artifacts/bigram-ai: web` for the root web preview. Restart it from the
    Replit workflow controls or with the workflow restart tool; do not run the
    Vite command manually on a different port.
-3. Start or restart the existing `artifacts/api-server: API Server` workflow as
+4. Start or restart the existing `artifacts/api-server: API Server` workflow as
    well. The frontend calls the API through `/api`, so starting only the
    frontend produces a page with failed data requests.
-4. If `/api/healthz` returns `200` but model endpoints return a database error
+5. If `/api/healthz` returns `200` but model endpoints return a database error
    saying that `brain_state`, `chat_messages`, or `model_snapshots` is missing,
    use the development-only schema command below:
 
@@ -139,9 +146,13 @@ root `/` routing.
    This uses Replit's provisioned development database. Never set
    `DATABASE_URL` manually, add startup-time DDL, or run this against
    production.
-5. Verify the root preview at `/` and the API health endpoint at
+6. Verify the root preview at `/` and the API health endpoint at
    `/api/healthz`. Start `artifacts/mockup-sandbox: Component Preview Server`
    only when the Canvas component preview is needed.
+
+Replit may require the account owner to approve the GitHub OAuth connection.
+That approval is the only expected user interaction; the agent must request it
+immediately rather than proceeding with a disconnected or simulated backup.
 
 The artifact workflows inject the correct `PORT` and `BASE_PATH` values and
 provide the path-based preview routing. The existing artifact metadata is the
