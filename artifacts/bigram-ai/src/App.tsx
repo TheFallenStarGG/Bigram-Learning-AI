@@ -43,7 +43,6 @@ import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
 const SOURCE_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI';
-const SNAPSHOT_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI-Snapshots';
 const DISCLAIMER_STORAGE_KEY = 'bigram-ai-disclaimer-seen';
 
 function formatCount(value: number | undefined) {
@@ -264,7 +263,6 @@ function GithubPanel() {
     <section className="rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)]">
       <div className="flex items-start gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"><Github className="h-4 w-4" /></div><div><div className="flex items-center gap-2"><h2 className="display text-[15px] font-semibold">Private GitHub backup</h2><span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] ${github?.connected ? 'bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))]' : 'bg-[hsl(var(--accent)/.17)] text-[hsl(29_58%_40%)]'}`}>{github?.connected ? 'linked' : 'unavailable'}</span></div><p className="mt-1 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">{github?.connected ? 'Every five-minute snapshot is written to a private repository and becomes the model’s memory source for the next chat.' : 'Private GitHub backups are temporarily unavailable.'}</p></div></div>
        <div className="mt-4 rounded-xl bg-[hsl(var(--muted)/.7)] p-3 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]"><Info className="mr-1.5 inline h-3.5 w-3.5 align-[-2px]" />Snapshot files stay separate from the open-source project. The app always reads the latest private snapshot before learning from a new message.</div>
-       <a data-testid="link-snapshot-repository" href={SNAPSHOT_REPOSITORY_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-[hsl(var(--primary))]">Open snapshot repository <ExternalLink className="h-3 w-3" /></a>
     </section>
   );
 }
@@ -311,6 +309,9 @@ function DisclaimerModal() {
         </p>
         <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
           Its responses may be limited or repetitive while it learns. That is a normal part of watching this small model develop.
+        </p>
+        <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
+          Bigram is entirely open source. You can explore its code from the Sources tab, while conversations are kept private and separate from the public source project.
         </p>
         <button
           type="button"

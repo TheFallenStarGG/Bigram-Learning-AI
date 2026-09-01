@@ -1,0 +1,791 @@
+{
+  "format": "bigram-ai/v1",
+  "createdAt": "2026-09-01T20:52:43.869Z",
+  "model": {
+    "vocabulary": {
+      "!": 7,
+      ",": 1,
+      "?": 6,
+      "a": 3,
+      "i": 12,
+      "am": 1,
+      "hi": 5,
+      "it": 2,
+      "no": 6,
+      "so": 1,
+      "are": 1,
+      "day": 1,
+      "did": 6,
+      "lol": 6,
+      "not": 5,
+      "the": 1,
+      "yes": 1,
+      "you": 6,
+      "hows": 2,
+      "just": 1,
+      "mean": 1,
+      "said": 3,
+      "stop": 1,
+      "that": 3,
+      "well": 1,
+      "what": 4,
+      "yeet": 1,
+      "your": 1,
+      "again": 3,
+      "didnt": 1,
+      "first": 2,
+      "going": 2,
+      "hello": 8,
+      "howdy": 1,
+      "quite": 1,
+      "thats": 3,
+      "there": 1,
+      "think": 1,
+      "words": 1,
+      "youre": 2,
+      "bigram": 1,
+      "called": 1,
+      "forgot": 1,
+      "friend": 3,
+      "saying": 1,
+      "getting": 1,
+      "learning": 1,
+      "sentence": 3
+    },
+    "transitions": {
+      "!": {
+        "__END__": 7
+      },
+      ",": {
+        "not": 1
+      },
+      "?": {
+        "__END__": 6
+      },
+      "a": {
+        "sentence": 3
+      },
+      "i": {
+        "!": 1,
+        "am": 1,
+        "did": 5,
+        "just": 1,
+        "said": 2,
+        "think": 1,
+        "called": 1
+      },
+      "am": {
+        ",": 1
+      },
+      "hi": {
+        "!": 2,
+        "__END__": 3
+      },
+      "it": {
+        "first": 1,
+        "going": 1
+      },
+      "no": {
+        "i": 3,
+        "you": 3
+      },
+      "so": {
+        "did": 1
+      },
+      "are": {
+        "__END__": 1
+      },
+      "day": {
+        "going": 1
+      },
+      "did": {
+        "i": 1,
+        "not": 1,
+        "__END__": 4
+      },
+      "lol": {
+        "__END__": 6
+      },
+      "not": {
+        "a": 2,
+        "i": 1,
+        "quite": 1,
+        "__END__": 1
+      },
+      "the": {
+        "words": 1
+      },
+      "yes": {
+        "i": 1
+      },
+      "you": {
+        "are": 1,
+        "mean": 1,
+        "didnt": 1,
+        "forgot": 1,
+        "friend": 1,
+        "__END__": 1
+      },
+      "hows": {
+        "it": 1,
+        "your": 1
+      },
+      "just": {
+        "said": 1
+      },
+      "mean": {
+        "i": 1
+      },
+      "said": {
+        "it": 1,
+        "that": 2
+      },
+      "stop": {
+        "saying": 1
+      },
+      "that": {
+        "lol": 1,
+        "first": 1,
+        "__END__": 1
+      },
+      "well": {
+        "!": 1
+      },
+      "what": {
+        "?": 4
+      },
+      "yeet": {
+        "__END__": 1
+      },
+      "your": {
+        "day": 1
+      },
+      "again": {
+        "what": 2,
+        "__END__": 1
+      },
+      "didnt": {
+        "__END__": 1
+      },
+      "first": {
+        "__END__": 2
+      },
+      "going": {
+        "?": 1,
+        "friend": 1
+      },
+      "hello": {
+        "!": 2,
+        "again": 1,
+        "bigram": 1,
+        "friend": 1,
+        "__END__": 3
+      },
+      "howdy": {
+        "__END__": 1
+      },
+      "quite": {
+        "a": 1
+      },
+      "thats": {
+        "not": 3
+      },
+      "there": {
+        "__END__": 1
+      },
+      "think": {
+        "you": 1
+      },
+      "words": {
+        "lol": 1
+      },
+      "youre": {
+        "getting": 1,
+        "learning": 1
+      },
+      "bigram": {
+        "!": 1
+      },
+      "called": {
+        "you": 1
+      },
+      "forgot": {
+        "the": 1
+      },
+      "friend": {
+        "?": 1,
+        "__END__": 2
+      },
+      "saying": {
+        "that": 1
+      },
+      "getting": {
+        "there": 1
+      },
+      "learning": {
+        "well": 1
+      },
+      "sentence": {
+        "lol": 1,
+        "__END__": 2
+      },
+      "__START__": {
+        "i": 5,
+        "hi": 5,
+        "no": 6,
+        "so": 1,
+        "lol": 3,
+        "yes": 1,
+        "you": 1,
+        "hows": 2,
+        "stop": 1,
+        "what": 2,
+        "yeet": 1,
+        "again": 2,
+        "hello": 8,
+        "howdy": 1,
+        "thats": 3,
+        "youre": 2
+      }
+    },
+    "messageCount": 44,
+    "learningStartedAt": "2026-09-01T17:44:24.959Z"
+  },
+  "messages": [
+    {
+      "id": "5bea1fbe-fa49-457e-a09c-607c791b04c7",
+      "role": "user",
+      "content": "I said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "cf51f535-5363-4956-97e4-6a6d44efb20c",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T17:57:20.865Z"
+    },
+    {
+      "id": "7d5cf538-956f-4957-ba86-ab0e30292a52",
+      "role": "user",
+      "content": "No you",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "0e89334f-53d5-4692-b453-bef44af548d9",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T18:07:39.806Z"
+    },
+    {
+      "id": "eff57001-b8d9-46b8-99e4-3788a08b964f",
+      "role": "user",
+      "content": "Hello again",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "2d7b68d3-9bca-431c-9440-080cc39bed85",
+      "role": "assistant",
+      "content": "i said that first",
+      "createdAt": "2026-09-01T19:51:12.248Z"
+    },
+    {
+      "id": "e38a186d-d48b-4569-9d1a-4901647d2e6c",
+      "role": "user",
+      "content": "No i did",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    },
+    {
+      "id": "2f845f04-b058-4fb2-a26a-5dfb239440f1",
+      "role": "assistant",
+      "content": "no you",
+      "createdAt": "2026-09-01T19:51:17.778Z"
+    },
+    {
+      "id": "ac304878-7019-46d7-9e49-1b64239097ac",
+      "role": "user",
+      "content": "Yeet",
+      "createdAt": "2026-09-01T19:52:23.132Z"
+    },
+    {
+      "id": "b0bb41fc-4526-4975-a476-febf6835043e",
+      "role": "assistant",
+      "content": "hello again",
+      "createdAt": "2026-09-01T19:52:23.132Z"
+    },
+    {
+      "id": "64d27610-58d5-4c24-9cc5-46aa8fe816fd",
+      "role": "user",
+      "content": "Hello",
+      "createdAt": "2026-09-01T19:52:27.946Z"
+    },
+    {
+      "id": "8846fc14-ecbd-4549-a4dc-30b45ec0c786",
+      "role": "assistant",
+      "content": "again",
+      "createdAt": "2026-09-01T19:52:27.946Z"
+    },
+    {
+      "id": "fd746aa5-db38-4eed-b565-a8aac8e43442",
+      "role": "user",
+      "content": "Again what?",
+      "createdAt": "2026-09-01T19:52:39.171Z"
+    },
+    {
+      "id": "89aadc9a-0fe2-423d-ac0c-f3b70e39e094",
+      "role": "assistant",
+      "content": "no i said that first",
+      "createdAt": "2026-09-01T19:52:39.171Z"
+    },
+    {
+      "id": "0cd2abc7-8e0c-4ba6-b940-745124737557",
+      "role": "user",
+      "content": "No you didnt",
+      "createdAt": "2026-09-01T19:52:46.200Z"
+    },
+    {
+      "id": "1463f103-ed52-4dbd-b67a-fc5e25007f57",
+      "role": "assistant",
+      "content": "yeet",
+      "createdAt": "2026-09-01T19:52:46.200Z"
+    },
+    {
+      "id": "88e8d7fd-a3f4-455c-af8c-7063d68656e7",
+      "role": "user",
+      "content": "Lol",
+      "createdAt": "2026-09-01T19:52:51.083Z"
+    },
+    {
+      "id": "59b4c4c8-91eb-4486-8d9e-ba0e0cf58221",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T19:52:51.083Z"
+    },
+    {
+      "id": "fed15711-da67-46fc-8e96-6023e978d174",
+      "role": "user",
+      "content": "Howdy",
+      "createdAt": "2026-09-01T19:52:56.038Z"
+    },
+    {
+      "id": "ccd19cd6-31e0-4e98-945e-f7ef5789f11e",
+      "role": "assistant",
+      "content": "yeet",
+      "createdAt": "2026-09-01T19:52:56.038Z"
+    },
+    {
+      "id": "f3f2a4c0-6c81-4c3b-aea8-8d7000c7181e",
+      "role": "user",
+      "content": "Stop saying that lol",
+      "createdAt": "2026-09-01T19:53:07.039Z"
+    },
+    {
+      "id": "085857f3-540a-4bc7-9e71-bf8affd58c17",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T19:53:07.039Z"
+    },
+    {
+      "id": "407b9e2c-f690-4276-a9f3-36fb73071ce3",
+      "role": "user",
+      "content": "Hi",
+      "createdAt": "2026-09-01T19:53:10.775Z"
+    },
+    {
+      "id": "2fc59096-9464-41c1-b4ce-9742ec1eb6ad",
+      "role": "assistant",
+      "content": "hello again what?",
+      "createdAt": "2026-09-01T19:53:10.775Z"
+    },
+    {
+      "id": "db912a2f-99ee-4b03-a989-f75cdc5247e5",
+      "role": "user",
+      "content": "Hello",
+      "createdAt": "2026-09-01T19:53:21.755Z"
+    },
+    {
+      "id": "20f58233-1c5d-42ab-ba03-875c585363b1",
+      "role": "assistant",
+      "content": "again what?",
+      "createdAt": "2026-09-01T19:53:21.755Z"
+    },
+    {
+      "id": "8a7509af-3b81-4d86-ac73-08b6bba5f2a8",
+      "role": "user",
+      "content": "What?",
+      "createdAt": "2026-09-01T19:53:29.254Z"
+    },
+    {
+      "id": "4b161d74-9c65-482a-8d36-0a91116b6f20",
+      "role": "assistant",
+      "content": "what?",
+      "createdAt": "2026-09-01T19:53:29.254Z"
+    },
+    {
+      "id": "6b5eaa1c-e209-4974-a997-4685b19e5182",
+      "role": "user",
+      "content": "I just said that",
+      "createdAt": "2026-09-01T19:53:35.893Z"
+    },
+    {
+      "id": "b7d293ee-b94d-42dd-ad06-2b45b00a8fa1",
+      "role": "assistant",
+      "content": "lol",
+      "createdAt": "2026-09-01T19:53:35.893Z"
+    },
+    {
+      "id": "7dfdc49e-1829-440a-a26f-af986b7b5639",
+      "role": "user",
+      "content": "Hello friend",
+      "createdAt": "2026-09-01T20:41:43.625Z"
+    },
+    {
+      "id": "bdfe65d3-b1fe-42a8-b8c6-14e9caad604f",
+      "role": "assistant",
+      "content": "what?",
+      "createdAt": "2026-09-01T20:41:43.625Z"
+    },
+    {
+      "id": "56db60e5-bb32-4353-adf5-19fa32aeffea",
+      "role": "user",
+      "content": "I called you friend",
+      "createdAt": "2026-09-01T20:41:51.515Z"
+    },
+    {
+      "id": "49e7e0bb-fc18-414b-a3d2-c81d2cfad9bc",
+      "role": "assistant",
+      "content": "hello friend",
+      "createdAt": "2026-09-01T20:41:51.515Z"
+    },
+    {
+      "id": "465386c0-2686-4b4a-b9a3-9af6fa2ccccb",
+      "role": "user",
+      "content": "Hello!",
+      "createdAt": "2026-09-01T20:41:58.462Z"
+    },
+    {
+      "id": "a7680af2-f0b3-4b0f-aada-d0cf339bf18f",
+      "role": "assistant",
+      "content": "hello!",
+      "createdAt": "2026-09-01T20:41:58.462Z"
+    },
+    {
+      "id": "290072e8-eaa5-4b6e-a56a-9432d3e29fc4",
+      "role": "user",
+      "content": "Youre learning well!",
+      "createdAt": "2026-09-01T20:42:08.858Z"
+    },
+    {
+      "id": "48d1c42c-192e-4e03-b21b-70c9e033fdcf",
+      "role": "assistant",
+      "content": "i did",
+      "createdAt": "2026-09-01T20:42:08.858Z"
+    },
+    {
+      "id": "b2900fa4-170d-48ca-8420-78124a21fd5f",
+      "role": "user",
+      "content": "I think you mean i am, not i did",
+      "createdAt": "2026-09-01T20:42:25.028Z"
+    },
+    {
+      "id": "564922a0-ebc7-45cf-8f57-32e4db0def7c",
+      "role": "assistant",
+      "content": "youre learning well!",
+      "createdAt": "2026-09-01T20:42:25.028Z"
+    },
+    {
+      "id": "4e206380-7102-418f-baef-f1099ff8c8ce",
+      "role": "user",
+      "content": "No you are",
+      "createdAt": "2026-09-01T20:42:34.417Z"
+    },
+    {
+      "id": "390a203b-9bb9-4b1e-a39b-64700eced117",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T20:42:34.417Z"
+    },
+    {
+      "id": "ae8447cc-317d-4cbc-b71e-a5fe9a68c891",
+      "role": "user",
+      "content": "Hi",
+      "createdAt": "2026-09-01T20:42:39.734Z"
+    },
+    {
+      "id": "0e6f12a7-7ddb-45f9-b09e-95ae47136bc9",
+      "role": "assistant",
+      "content": "no you",
+      "createdAt": "2026-09-01T20:42:39.734Z"
+    },
+    {
+      "id": "c00ace95-3bba-4225-a0fa-f1383358a192",
+      "role": "user",
+      "content": "What?",
+      "createdAt": "2026-09-01T20:42:44.322Z"
+    },
+    {
+      "id": "8dcb0d24-ad3c-456b-b04c-1333cb483239",
+      "role": "assistant",
+      "content": "i just said that first",
+      "createdAt": "2026-09-01T20:42:44.322Z"
+    },
+    {
+      "id": "4e804527-6b64-465b-98ec-43e498f54b58",
+      "role": "user",
+      "content": "No i said it first",
+      "createdAt": "2026-09-01T20:42:52.755Z"
+    },
+    {
+      "id": "9f59bcf5-a29d-406c-9a6b-e2caec0c209c",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T20:42:52.755Z"
+    },
+    {
+      "id": "0d1fbc41-1857-4b67-a600-5eda0c67d446",
+      "role": "user",
+      "content": "Hello!",
+      "createdAt": "2026-09-01T20:43:44.214Z"
+    },
+    {
+      "id": "8dbbb9ea-d3ef-48ff-a455-753e433b4588",
+      "role": "assistant",
+      "content": "no you didnt",
+      "createdAt": "2026-09-01T20:43:44.214Z"
+    },
+    {
+      "id": "1a36391e-1919-4b2f-84f7-8f13d43efecc",
+      "role": "user",
+      "content": "Yes i did",
+      "createdAt": "2026-09-01T20:43:49.186Z"
+    },
+    {
+      "id": "59821ce7-2bf4-4694-9639-6941f6a969b8",
+      "role": "assistant",
+      "content": "i called you friend",
+      "createdAt": "2026-09-01T20:43:49.186Z"
+    },
+    {
+      "id": "101f76bc-50a6-420a-908d-e6dd82633f32",
+      "role": "user",
+      "content": "So did i!",
+      "createdAt": "2026-09-01T20:43:55.752Z"
+    },
+    {
+      "id": "f1ee12ec-e8aa-4ec1-bc23-0c0b6098d147",
+      "role": "assistant",
+      "content": "hi",
+      "createdAt": "2026-09-01T20:43:55.752Z"
+    },
+    {
+      "id": "35af344b-7d76-4c7f-a6c1-78565ec520d1",
+      "role": "user",
+      "content": "Hello",
+      "createdAt": "2026-09-01T20:44:00.337Z"
+    },
+    {
+      "id": "8eb8a276-c10b-4b9d-a497-8bc440ad1a2b",
+      "role": "assistant",
+      "content": "!",
+      "createdAt": "2026-09-01T20:44:00.337Z"
+    },
+    {
+      "id": "bd4b0575-dc82-4bcf-949f-6c3000c8f7d6",
+      "role": "user",
+      "content": "You forgot the words lol",
+      "createdAt": "2026-09-01T20:44:12.317Z"
+    },
+    {
+      "id": "0dbe0b08-8396-440f-95f9-fb72a22662ae",
+      "role": "assistant",
+      "content": "again",
+      "createdAt": "2026-09-01T20:44:12.317Z"
+    },
+    {
+      "id": "cffa90eb-0ef7-4256-91dd-85a647f3be12",
+      "role": "user",
+      "content": "Again what?",
+      "createdAt": "2026-09-01T20:44:20.763Z"
+    },
+    {
+      "id": "105a6c87-0cbb-40a2-a5fe-004f43e5b129",
+      "role": "assistant",
+      "content": "i said that",
+      "createdAt": "2026-09-01T20:44:20.763Z"
+    },
+    {
+      "id": "3aab7eb9-423e-450a-86df-2fa2a68f421a",
+      "role": "user",
+      "content": "No i did",
+      "createdAt": "2026-09-01T20:44:28.678Z"
+    },
+    {
+      "id": "15bcb2c9-87f2-4e03-ac38-b2e4518235a5",
+      "role": "assistant",
+      "content": "lol",
+      "createdAt": "2026-09-01T20:44:28.678Z"
+    },
+    {
+      "id": "628c402c-e79d-4128-97c9-a1d8b79e8e8f",
+      "role": "user",
+      "content": "Lol",
+      "createdAt": "2026-09-01T20:44:34.142Z"
+    },
+    {
+      "id": "b2ad7313-0840-439f-b0b8-b3a70113f8aa",
+      "role": "assistant",
+      "content": "hello!",
+      "createdAt": "2026-09-01T20:44:34.142Z"
+    },
+    {
+      "id": "a6c4e8a6-715d-456b-a34b-ec8b8e5da8ba",
+      "role": "user",
+      "content": "Hi!",
+      "createdAt": "2026-09-01T20:44:39.553Z"
+    },
+    {
+      "id": "417165dc-8d70-4975-b924-edff91802318",
+      "role": "assistant",
+      "content": "no you",
+      "createdAt": "2026-09-01T20:44:39.553Z"
+    },
+    {
+      "id": "c11a3f15-5189-4f04-847c-b852882f2c83",
+      "role": "user",
+      "content": "Hows it going friend?",
+      "createdAt": "2026-09-01T20:45:17.840Z"
+    },
+    {
+      "id": "e24c353b-4dac-42ed-a008-dd7ce0abd30c",
+      "role": "assistant",
+      "content": "i am, not i called you didnt",
+      "createdAt": "2026-09-01T20:45:17.840Z"
+    },
+    {
+      "id": "d1d8731d-2456-4107-926e-4a3e59e614d0",
+      "role": "user",
+      "content": "Youre getting there",
+      "createdAt": "2026-09-01T20:45:35.246Z"
+    },
+    {
+      "id": "ffa323d6-0919-4f06-8bad-179d0e43e7f2",
+      "role": "assistant",
+      "content": "yeet",
+      "createdAt": "2026-09-01T20:45:35.246Z"
+    },
+    {
+      "id": "f517e869-d48d-45ef-92d0-54a7b92abf6a",
+      "role": "user",
+      "content": "Thats not a sentence lol",
+      "createdAt": "2026-09-01T20:45:50.007Z"
+    },
+    {
+      "id": "c09da804-a9dd-4fb7-a047-dc7b8c4ac0dd",
+      "role": "assistant",
+      "content": "hello!",
+      "createdAt": "2026-09-01T20:45:50.007Z"
+    },
+    {
+      "id": "438bae14-303b-406d-9eb5-5bb5559c9903",
+      "role": "user",
+      "content": "Hi!",
+      "createdAt": "2026-09-01T20:45:54.118Z"
+    },
+    {
+      "id": "c306a818-5247-4bcf-800e-fc2fdbd41d71",
+      "role": "assistant",
+      "content": "hello!",
+      "createdAt": "2026-09-01T20:45:54.118Z"
+    },
+    {
+      "id": "5a44e71c-7e84-4069-b327-0edc745a9aa3",
+      "role": "user",
+      "content": "Hello Bigram!",
+      "createdAt": "2026-09-01T20:51:36.100Z"
+    },
+    {
+      "id": "46e9fc5a-4e7b-4d77-aadf-3c3021bd70d7",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T20:51:36.100Z"
+    },
+    {
+      "id": "4ce08cfa-4eaf-4492-a56b-b5c8126b97f9",
+      "role": "user",
+      "content": "Hows your day going?",
+      "createdAt": "2026-09-01T20:51:47.739Z"
+    },
+    {
+      "id": "0b5298fe-0de6-46ab-b94a-a57380818a8f",
+      "role": "assistant",
+      "content": "hello",
+      "createdAt": "2026-09-01T20:51:47.739Z"
+    },
+    {
+      "id": "55a480c0-9f6f-4d60-8051-51abae4407f3",
+      "role": "user",
+      "content": "Hi",
+      "createdAt": "2026-09-01T20:51:53.357Z"
+    },
+    {
+      "id": "f65f92ff-fb1a-461a-8cdc-7a776bcc1ec9",
+      "role": "assistant",
+      "content": "!",
+      "createdAt": "2026-09-01T20:51:53.357Z"
+    },
+    {
+      "id": "cdfc21f3-bb03-454e-8afd-bf2db753c60e",
+      "role": "user",
+      "content": "Thats not a sentence",
+      "createdAt": "2026-09-01T20:52:01.998Z"
+    },
+    {
+      "id": "aa53f63f-56c7-4bd0-b8e2-b46be2e9c014",
+      "role": "assistant",
+      "content": "lol",
+      "createdAt": "2026-09-01T20:52:01.998Z"
+    },
+    {
+      "id": "5c55fc1c-0521-4f46-9db0-7e57bd4f8843",
+      "role": "user",
+      "content": "Lol",
+      "createdAt": "2026-09-01T20:52:08.786Z"
+    },
+    {
+      "id": "c301b593-f05a-4bd3-8374-8750ec27005c",
+      "role": "assistant",
+      "content": "no you forgot the words lol",
+      "createdAt": "2026-09-01T20:52:08.786Z"
+    },
+    {
+      "id": "c4b38116-8709-4ef7-8415-a7ff124f77df",
+      "role": "user",
+      "content": "I did not",
+      "createdAt": "2026-09-01T20:52:16.128Z"
+    },
+    {
+      "id": "09f840e0-d469-44e1-9c54-708e63273390",
+      "role": "assistant",
+      "content": "no you mean i just said it going?",
+      "createdAt": "2026-09-01T20:52:16.128Z"
+    },
+    {
+      "id": "e71d09cd-0906-4764-8ebd-2e70d6674109",
+      "role": "user",
+      "content": "Thats not quite a sentence",
+      "createdAt": "2026-09-01T20:52:29.402Z"
+    },
+    {
+      "id": "26b8c0d9-7b25-44db-8677-530a2866b456",
+      "role": "assistant",
+      "content": "i did not a sentence",
+      "createdAt": "2026-09-01T20:52:29.402Z"
+    }
+  ],
+  "github": {
+    "configured": true,
+    "owner": "TheFallenStarGG",
+    "repository": "Bigram-Learning-AI-Snapshots",
+    "branch": "main",
+    "connected": true
+  }
+}
