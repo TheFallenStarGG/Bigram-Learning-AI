@@ -8,10 +8,15 @@ import {
   githubSettingsTable,
   modelSnapshotsTable,
 } from "@workspace/db";
+import { getLatestSnapshotFromGithub, pushSnapshotToGithub } from "./github";
+import { logger } from "./logger";
 
 const START = "__START__";
 const END = "__END__";
 const SNAPSHOT_INTERVAL_MS = 5 * 60 * 1000;
+const DEFAULT_GITHUB_OWNER = "TheFallenStarGG";
+const DEFAULT_GITHUB_REPOSITORY = "Bigram-Learning-AI-Snapshots";
+const DEFAULT_GITHUB_BRANCH = "main";
 
 type Vocabulary = Record<string, number>;
 type Transitions = Record<string, Record<string, number>>;
@@ -161,8 +166,30 @@ async function ensureRows() {
   if (!github) {
     await db
       .insert(githubSettingsTable)
-      .values({ id: 1 })
+      .values({
+        id: 1,
+        owner: DEFAULT_GITHUB_OWNER,
+        repository: DEFAULT_GITHUB_REPOSITORY,
+        branch: DEFAULT_GITHUB_BRANCH,
+        configured: true,
+      })
       .onConflictDoNothing({ target: githubSettingsTable.id });
+  } else if (
+    !github.configured ||
+    !github.owner ||
+    !github.repository ||
+    !github.branch
+  ) {
+    await db
+      .update(githubSettingsTable)
+      .set({
+        owner: DEFAULT_GITHUB_OWNER,
+        repository: DEFAULT_GITHUB_REPOSITORY,
+        branch: DEFAULT_GITHUB_BRANCH,
+        configured: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(githubSettingsTable.id, 1));
   }
 }
 
@@ -201,6 +228,7 @@ async function saveState(state: BrainData) {
       vocabulary: state.vocabulary,
       transitions: state.transitions,
       messageCount: state.messageCount,
+      learningStartedAt: state.learningStartedAt,
       lastSnapshotAt: state.lastSnapshotAt,
     })
     .where(eq(brainStateTable.id, 1));
@@ -226,7 +254,7 @@ export async function getOverview(): Promise<BrainOverview> {
     lastSnapshotAt: state.lastSnapshotAt?.toISOString() ?? null,
     nextSnapshotAt: new Date(next).toISOString(),
     githubConfigured: github.configured,
-    githubConnected: false,
+    githubConnected: github.configured,
   };
 }
 
@@ -244,6 +272,7 @@ export async function getMessages(): Promise<PublicMessage[]> {
 }
 
 export async function sendMessage(prompt: string) {
+  await syncStateFromLatestRemoteSnapshot();
   const state = await getState();
   learn(state, prompt);
   const response = generate(state, prompt);
@@ -318,7 +347,7 @@ export async function createSnapshot(): Promise<PublicSnapshot> {
       owner: github.owner,
       repository: github.repository,
       branch: github.branch,
-      connected: false,
+      connected: github.configured,
     },
   };
 
@@ -332,6 +361,32 @@ export async function createSnapshot(): Promise<PublicSnapshot> {
     "utf8",
   );
 
+  let status: "local" | "github" | "failed" = "local";
+  let error: string | null = null;
+
+  if (github.configured) {
+    try {
+      await pushSnapshotToGithub({
+        owner: github.owner,
+        repository: github.repository,
+        branch: github.branch,
+        filename,
+        content: JSON.stringify(snapshot, null, 2),
+      });
+      status = "github";
+    } catch (remoteError) {
+      status = "failed";
+      error =
+        remoteError instanceof Error
+          ? remoteError.message
+          : "The snapshot could not be written to GitHub.";
+      logger.error(
+        { err: remoteError, filename },
+        "Could not write model snapshot to GitHub",
+      );
+    }
+  }
+
   await db.insert(modelSnapshotsTable).values({
     id,
     filename,
@@ -339,8 +394,8 @@ export async function createSnapshot(): Promise<PublicSnapshot> {
     vocabulary: Object.keys(state.vocabulary).length,
     bigrams: countBigrams(state.transitions),
     messages: state.messageCount,
-    status: "local",
-    error: null,
+    status,
+    error,
   });
   state.lastSnapshotAt = createdAt;
   await saveState(state);
@@ -354,10 +409,10 @@ export async function getGithubSettings() {
     repository: github.repository,
     branch: github.branch,
     configured: github.configured,
-    connected: false,
+    connected: github.configured,
     message: github.configured
-      ? "Repository details saved. Connect GitHub to start pushing snapshots."
-      : "Connect GitHub to send snapshots to a repository.",
+      ? "Private GitHub backups are permanently linked."
+      : "Private GitHub backups are not configured.",
   };
 }
 
@@ -382,4 +437,113 @@ export function startSnapshotScheduler() {
     void createSnapshot().catch(() => undefined);
   }, SNAPSHOT_INTERVAL_MS);
   timer.unref();
+}
+
+async function syncStateFromLatestRemoteSnapshot() {
+  const github = await getGithubRow();
+  if (!github.configured) return;
+
+  const latest = await getLatestSnapshotFromGithub({
+    owner: github.owner,
+    repository: github.repository,
+    branch: github.branch,
+  });
+  if (!latest) return;
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(latest.content) as unknown;
+  } catch (error) {
+    throw new Error(
+      `The latest GitHub snapshot ${latest.filename} is not valid JSON.`,
+      { cause: error },
+    );
+  }
+
+  if (
+    typeof parsed !== "object" ||
+    parsed === null ||
+    !("model" in parsed) ||
+    !("messages" in parsed) ||
+    typeof parsed.model !== "object" ||
+    parsed.model === null ||
+    !Array.isArray(parsed.messages)
+  ) {
+    throw new Error(`The latest GitHub snapshot ${latest.filename} has an invalid format.`);
+  }
+
+  const model = parsed.model as Record<string, unknown>;
+  const vocabulary = model.vocabulary;
+  const transitions = model.transitions;
+  const messageCount = model.messageCount;
+  const learningStartedAt = model.learningStartedAt;
+  const createdAt = "createdAt" in parsed ? parsed.createdAt : null;
+
+  if (
+    typeof vocabulary !== "object" ||
+    vocabulary === null ||
+    typeof transitions !== "object" ||
+    transitions === null ||
+    typeof messageCount !== "number" ||
+    typeof learningStartedAt !== "string" ||
+    (createdAt !== null && typeof createdAt !== "string")
+  ) {
+    throw new Error(`The latest GitHub snapshot ${latest.filename} has an invalid model.`);
+  }
+
+  const messages = parsed.messages.map((message) => {
+    if (
+      typeof message !== "object" ||
+      message === null ||
+      !("id" in message) ||
+      !("role" in message) ||
+      !("content" in message) ||
+      !("createdAt" in message) ||
+      typeof message.id !== "string" ||
+      (message.role !== "user" && message.role !== "assistant") ||
+      typeof message.content !== "string" ||
+      typeof message.createdAt !== "string"
+    ) {
+      throw new Error(`The latest GitHub snapshot ${latest.filename} has invalid messages.`);
+    }
+    return {
+      id: message.id,
+      role: message.role,
+      content: message.content,
+      createdAt: new Date(message.createdAt),
+    };
+  });
+
+  const startedAt = new Date(learningStartedAt);
+  const snapshotAt = new Date(createdAt ?? startedAt);
+  if (
+    Number.isNaN(startedAt.getTime()) ||
+    Number.isNaN(snapshotAt.getTime()) ||
+    messages.some((message) => Number.isNaN(message.createdAt.getTime()))
+  ) {
+    throw new Error(`The latest GitHub snapshot ${latest.filename} has invalid dates.`);
+  }
+
+  await db.transaction(async (transaction) => {
+    await transaction
+      .update(brainStateTable)
+      .set({
+        vocabulary: vocabulary as Vocabulary,
+        transitions: transitions as Transitions,
+        messageCount,
+        learningStartedAt: startedAt,
+        lastSnapshotAt: snapshotAt,
+      })
+      .where(eq(brainStateTable.id, 1));
+
+    await transaction.delete(chatMessagesTable);
+    if (messages.length > 0) {
+      await transaction.insert(chatMessagesTable).values(messages);
+    }
+  });
+
+  logger.info(
+    { filename: latest.filename, messages: messages.length },
+    "Loaded latest model snapshot from GitHub",
+  );
 }

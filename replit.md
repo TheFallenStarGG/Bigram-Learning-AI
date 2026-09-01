@@ -26,15 +26,15 @@ Bigram AI is a transparent, from-scratch conversational model that learns word-t
 - `artifacts/bigram-ai/src/App.tsx` — responsive chat and model observability workspace
 - `artifacts/api-server/src/lib/brain-service.ts` — tokenizer, bigram learner, generator, snapshots, and scheduler
 - `artifacts/api-server/src/routes/brain.ts` — model, chat, snapshot, and GitHub settings routes
-- `lib/db/src/schema/brain.ts` — persistent model state, messages, snapshots, and backup settings
+- `lib/db/src/schema/brain.ts` — persistent model state, messages, snapshots, and private backup state
 - `lib/api-spec/openapi.yaml` — source of truth for the generated API client and Zod contracts
 
 ## Architecture decisions
 
 - The model is intentionally a word-level bigram model: it learns only token frequencies and adjacent-token transition counts, with no pretrained weights or external AI calls.
-- PostgreSQL stores the live model state and conversation history so learning survives server restarts; snapshots also write complete JSON files locally.
-- A five-minute server-side timer creates a snapshot while the API process is active. GitHub is represented as an explicit backup boundary and never claims remote success without an authorized connection.
-- The frontend uses generated API hooks so the chat, metrics, snapshot history, and backup settings all consume the same contract.
+- PostgreSQL stores the live model state and conversation history so learning survives server restarts; snapshots also write complete JSON files locally and to the private `Bigram-Learning-AI-Snapshots` repository.
+- A five-minute server-side timer creates a snapshot while the API process is active. Before every chat, the API loads the latest private GitHub snapshot so the model's vocabulary, transitions, and conversation memory stay current.
+- The frontend uses generated API hooks so the chat, metrics, snapshot history, and backup status all consume the same contract.
 
 ## Product
 
@@ -46,7 +46,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-- The GitHub panel stays marked “not connected” until a GitHub integration is authorized; local snapshots remain available in the meantime.
+- The Sources tab links only to the imported source repository. Snapshot files and conversation memory stay in the separate private backup repository.
 - Keep `lib/api-spec/openapi.yaml` and generated clients in sync by running the API codegen command after contract changes.
 
 ## Pointers

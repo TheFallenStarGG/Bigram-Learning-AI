@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
@@ -6,7 +6,6 @@ import {
   ArrowUp,
   BookOpen,
   BrainCircuit,
-  Check,
   ChevronRight,
   CircleDot,
   Cloud,
@@ -18,9 +17,7 @@ import {
   Menu,
   MessageSquare,
   Network,
-  RefreshCw,
   Save,
-  Settings2,
   Sparkles,
   TriangleAlert,
   X,
@@ -37,7 +34,6 @@ import {
   useGetBrainOverview,
   useGetBrainSnapshots,
   useSendBrainMessage,
-  useUpdateBrainGithub,
 } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -46,6 +42,7 @@ import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
 
 const queryClient = new QueryClient();
+const SOURCE_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI';
 
 function formatCount(value: number | undefined) {
   return new Intl.NumberFormat('en-US').format(value ?? 0);
@@ -79,7 +76,10 @@ function BrandMark() {
   );
 }
 
-function Sidebar({ onSettings }: { onSettings: () => void }) {
+function Sidebar() {
+  const [location, navigate] = useLocation();
+  const sourcesActive = location === '/sources';
+
   return (
     <aside className="hidden min-h-[100dvh] w-[248px] shrink-0 flex-col bg-[hsl(var(--sidebar))] px-4 py-5 text-[hsl(var(--sidebar-foreground))] lg:flex">
       <div className="flex items-center gap-3 px-2">
@@ -92,11 +92,11 @@ function Sidebar({ onSettings }: { onSettings: () => void }) {
 
       <div className="mt-12 px-2">
         <div className="mono mb-3 text-[9px] uppercase tracking-[.18em] text-[hsl(var(--sidebar-foreground)/.42)]">Workspace</div>
-        <div className="flex items-center gap-3 rounded-xl bg-[hsl(var(--sidebar-accent))] px-3 py-3 text-sm font-semibold">
+        <button onClick={() => navigate('/')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${!sourcesActive ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}>
           <MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />
           Live conversation
-          <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />
-        </div>
+          {!sourcesActive && <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />}
+        </button>
         <div className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[hsl(var(--sidebar-foreground)/.56)]">
           <Network className="h-4 w-4" />
           Bigram map
@@ -112,9 +112,9 @@ function Sidebar({ onSettings }: { onSettings: () => void }) {
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--sidebar-foreground)/.54)]">Every message changes the brain. Nothing is hidden behind a polished answer.</p>
         </div>
-        <button data-testid="button-open-settings" onClick={onSettings} className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-[hsl(var(--sidebar-foreground)/.62)] transition hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))]">
-          <Settings2 className="h-4 w-4" />
-          Backup settings
+        <button onClick={() => navigate('/sources')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))] ${sourcesActive ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-[hsl(var(--sidebar-foreground))]' : 'text-[hsl(var(--sidebar-foreground)/.62)]'}`}>
+          <BookOpen className="h-4 w-4" />
+          Sources
           <ChevronRight className="ml-auto h-4 w-4 opacity-50" />
         </button>
         <div className="mono mt-6 px-3 text-[9px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.3)]">build 0.4.7 · open weights</div>
@@ -123,7 +123,7 @@ function Sidebar({ onSettings }: { onSettings: () => void }) {
   );
 }
 
-function MobileHeader({ onSettings, onMenu }: { onSettings: () => void; onMenu: () => void }) {
+function MobileHeader({ onMenu }: { onMenu: () => void }) {
   return (
     <header className="flex items-center justify-between border-b border-[hsl(var(--border))] bg-[hsl(var(--card)/.9)] px-4 py-3 backdrop-blur lg:hidden">
       <div className="flex items-center gap-2.5">
@@ -131,7 +131,6 @@ function MobileHeader({ onSettings, onMenu }: { onSettings: () => void; onMenu: 
         <BrandMark />
         <span className="display text-sm font-bold">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</span>
       </div>
-      <button data-testid="button-open-mobile-settings" onClick={onSettings} className="rounded-lg p-2 text-[hsl(var(--muted-foreground))]"><Settings2 className="h-4 w-4" /></button>
     </header>
   );
 }
@@ -256,65 +255,29 @@ function SnapshotPanel() {
   );
 }
 
-function GithubPanel({ onOpenSettings }: { onOpenSettings: () => void }) {
+function GithubPanel() {
   const githubQuery = useGetBrainGithub({ query: { queryKey: getGetBrainGithubQueryKey() } });
   const github = githubQuery.data;
   return (
     <section className="rounded-[22px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-5 shadow-[var(--shadow-sm)]">
-      <div className="flex items-start gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"><Github className="h-4 w-4" /></div><div><div className="flex items-center gap-2"><h2 className="display text-[15px] font-semibold">GitHub backup</h2><span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] ${github?.connected ? 'bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))]' : 'bg-[hsl(var(--accent)/.17)] text-[hsl(29_58%_40%)]'}`}>{github?.connected ? 'connected' : 'not connected'}</span></div><p className="mt-1 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">{github?.connected ? `Snapshots will be copied to ${github.owner}/${github.repository}.` : 'Your snapshots are local only. GitHub has not been connected yet.'}</p></div></div>
-      <div className="mt-4 rounded-xl bg-[hsl(var(--muted)/.7)] p-3 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]"><Info className="mr-1.5 inline h-3.5 w-3.5 align-[-2px]" />Configure a destination now, then connect GitHub when you are ready. We never imply a remote backup exists before the connection is confirmed.</div>
-      <button data-testid="button-configure-github" onClick={onOpenSettings} className="mt-4 flex w-full items-center justify-between rounded-xl border border-[hsl(var(--border))] px-3.5 py-2.5 text-xs font-semibold transition hover:bg-[hsl(var(--muted))]"><span>{github?.configured ? 'Review destination' : 'Configure destination'}</span><ChevronRight className="h-4 w-4 text-[hsl(var(--muted-foreground))]" /></button>
+      <div className="flex items-start gap-3"><div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"><Github className="h-4 w-4" /></div><div><div className="flex items-center gap-2"><h2 className="display text-[15px] font-semibold">Private GitHub backup</h2><span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[.08em] ${github?.connected ? 'bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))]' : 'bg-[hsl(var(--accent)/.17)] text-[hsl(29_58%_40%)]'}`}>{github?.connected ? 'linked' : 'unavailable'}</span></div><p className="mt-1 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">{github?.connected ? 'Every five-minute snapshot is written to a private repository and becomes the model’s memory source for the next chat.' : 'Private GitHub backups are temporarily unavailable.'}</p></div></div>
+      <div className="mt-4 rounded-xl bg-[hsl(var(--muted)/.7)] p-3 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]"><Info className="mr-1.5 inline h-3.5 w-3.5 align-[-2px]" />Snapshot files stay separate from the open-source project. The app always reads the latest private snapshot before learning from a new message.</div>
     </section>
   );
 }
 
-function SettingsModal({ onClose }: { onClose: () => void }) {
-  const queryClient = useQueryClient();
-  const githubQuery = useGetBrainGithub({ query: { queryKey: getGetBrainGithubQueryKey() } });
-  const updateGithub = useUpdateBrainGithub();
-  const github = githubQuery.data;
-  const [owner, setOwner] = useState('');
-  const [repository, setRepository] = useState('');
-  const [branch, setBranch] = useState('main');
-
-  useEffect(() => {
-    if (githubQuery.data) {
-      setOwner(githubQuery.data.owner ?? '');
-      setRepository(githubQuery.data.repository ?? '');
-      setBranch(githubQuery.data.branch ?? 'main');
-    }
-  }, [githubQuery.data]);
-
-  const submit = (event: FormEvent) => {
-    event.preventDefault();
-    updateGithub.mutate({ data: { owner: owner.trim(), repository: repository.trim(), branch: branch.trim() || 'main' } }, { onSuccess: () => { queryClient.invalidateQueries({ queryKey: getGetBrainGithubQueryKey() }); queryClient.invalidateQueries({ queryKey: getGetBrainOverviewQueryKey() }); } });
+function MobileMenu({ onClose }: { onClose: () => void }) {
+  const [location, navigate] = useLocation();
+  const goTo = (path: string) => {
+    navigate(path);
+    onClose();
   };
 
-  return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-[hsl(var(--foreground)/.35)] p-0 backdrop-blur-sm sm:items-center sm:p-5">
-      <div role="dialog" aria-modal="true" className="w-full max-w-lg rounded-t-[26px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-[0_24px_80px_rgba(20,45,41,.2)] sm:rounded-[26px]">
-        <div className="flex items-start justify-between"><div><div className="flex items-center gap-2"><Github className="h-4 w-4" /><h2 className="display text-lg font-semibold tracking-[-.03em]">Backup settings</h2></div><p className="mt-2 max-w-sm text-xs leading-relaxed text-[hsl(var(--muted-foreground))]">Point snapshots at a repository. This saves the destination, but it does not connect GitHub by itself.</p></div><button data-testid="button-close-settings" onClick={onClose} className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><X className="h-4 w-4" /></button></div>
-        {githubQuery.isError && <div className="mt-5 rounded-xl bg-[hsl(var(--destructive)/.07)] p-3 text-xs text-[hsl(var(--destructive))]">Could not load GitHub settings. You can still try saving a destination.</div>}
-        <form onSubmit={submit} className="mt-6 space-y-4">
-          <label className="block"><span className="mono mb-1.5 block text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))]">Owner</span><input data-testid="input-github-owner" value={owner} onChange={(event) => setOwner(event.target.value)} required maxLength={100} placeholder="your-handle" className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary)/.7)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></label>
-          <label className="block"><span className="mono mb-1.5 block text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))]">Repository</span><input data-testid="input-github-repository" value={repository} onChange={(event) => setRepository(event.target.value)} required maxLength={100} placeholder="tiny-brain" className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary)/.7)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></label>
-          <label className="block"><span className="mono mb-1.5 block text-[9px] uppercase tracking-[.12em] text-[hsl(var(--muted-foreground))]">Branch</span><input data-testid="input-github-branch" value={branch} onChange={(event) => setBranch(event.target.value)} required maxLength={100} className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--background))] px-3.5 py-2.5 text-sm outline-none focus:border-[hsl(var(--primary)/.7)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></label>
-          <div className="flex items-center justify-between gap-3 pt-2"><div className="flex items-center gap-2 text-[10px] text-[hsl(var(--muted-foreground))]">{github?.connected ? <><Check className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />GitHub connection confirmed</> : <><TriangleAlert className="h-3.5 w-3.5 text-[hsl(var(--accent))]" />GitHub is not connected</>}</div><button data-testid="button-save-github-settings" type="submit" disabled={updateGithub.isPending || !owner.trim() || !repository.trim()} className="flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-2.5 text-xs font-bold text-[hsl(var(--primary-foreground))] transition hover:brightness-110 disabled:opacity-45">{updateGithub.isPending ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}{updateGithub.isPending ? 'Saving…' : 'Save destination'}</button></div>
-          {updateGithub.isError && <p className="text-right text-[11px] text-[hsl(var(--destructive))]">The destination could not be saved.</p>}
-          {updateGithub.isSuccess && <p className="text-right text-[11px] text-[hsl(var(--primary))]">Destination saved. GitHub is still not connected.</p>}
-        </form>
-      </div>
-    </div>
-  );
-}
-
-function MobileMenu({ onClose, onSettings }: { onClose: () => void; onSettings: () => void }) {
-  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-14 rounded-xl bg-[hsl(var(--sidebar-accent))] px-3 py-3 text-sm font-semibold"><MessageSquare className="mr-2 inline h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</div><button data-testid="button-mobile-menu-settings" onClick={onSettings} className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm text-[hsl(var(--sidebar-foreground)/.68)]"><Settings2 className="h-4 w-4" />Backup settings</button></div>;
+  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><button onClick={() => goTo('/')} className={`mt-14 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
 }
 
 function Home() {
   const overviewQuery = useGetBrainOverview({ query: { queryKey: getGetBrainOverviewQueryKey() } });
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const overview = overviewQuery.data;
   const startedLabel = useMemo(() => formatDate(overview?.learningStartedAt, 'not started'), [overview?.learningStartedAt]);
@@ -323,9 +286,9 @@ function Home() {
     <div className="app-shell">
       <div className="noise" />
       <div className="flex min-h-[100dvh]">
-        <Sidebar onSettings={() => setSettingsOpen(true)} />
+        <Sidebar />
         <div className="min-w-0 flex-1">
-          <MobileHeader onSettings={() => setSettingsOpen(true)} onMenu={() => setMobileMenuOpen(true)} />
+          <MobileHeader onMenu={() => setMobileMenuOpen(true)} />
           <main className="mx-auto max-w-[1500px] px-4 py-5 sm:px-7 sm:py-8 xl:px-10">
             <header className="reveal mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
               <div><div className="mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[.17em] text-[hsl(var(--primary))]"><Activity className="h-3.5 w-3.5" />model observability workspace</div><h1 data-testid="text-page-title" className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Watch a small brain<br /><span className="text-[hsl(var(--primary))]">become itself.</span></h1><p className="mt-4 max-w-[530px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">Bigram is a transparent language model built from scratch. Teach it in public, see what it remembers, and keep every state you care about.</p></div>
@@ -333,13 +296,43 @@ function Home() {
             </header>
             <div className="reveal grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]" style={{ animationDelay: '.08s' }}>
               <div className="min-w-0"><OverviewPanel overview={overview} isLoading={overviewQuery.isLoading} isError={overviewQuery.isError} onRetry={() => overviewQuery.refetch()} /><div className="mt-5"><ChatPanel /></div></div>
-              <aside className="space-y-5"><SnapshotPanel /><GithubPanel onOpenSettings={() => setSettingsOpen(true)} /><div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-4"><div className="flex items-center gap-2 text-[11px] font-semibold"><Code2 className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />A model you can read</div><p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">No hidden retrieval. No opaque weights. Just tokens, transitions, and a trail of snapshots.</p><button data-testid="button-learn-more" onClick={() => window.open('https://github.com', '_blank', 'noopener,noreferrer')} className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-[hsl(var(--primary))]">Explore the idea <ExternalLink className="h-3 w-3" /></button></div></aside>
+              <aside className="space-y-5"><SnapshotPanel /><GithubPanel /><div className="rounded-2xl border border-dashed border-[hsl(var(--border))] p-4"><div className="flex items-center gap-2 text-[11px] font-semibold"><Code2 className="h-3.5 w-3.5 text-[hsl(var(--primary))]" />A model you can read</div><p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">No hidden retrieval. No opaque weights. Just tokens, transitions, and a trail of snapshots.</p><a data-testid="button-learn-more" href={SOURCE_REPOSITORY_URL} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-[hsl(var(--primary))]">Explore the idea <ExternalLink className="h-3 w-3" /></a></div></aside>
             </div>
           </main>
         </div>
       </div>
-      {mobileMenuOpen && <MobileMenu onClose={() => setMobileMenuOpen(false)} onSettings={() => { setMobileMenuOpen(false); setSettingsOpen(true); }} />}
-      {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
+      {mobileMenuOpen && <MobileMenu onClose={() => setMobileMenuOpen(false)} />}
+    </div>
+  );
+}
+
+function SourcesPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <div className="app-shell">
+      <div className="noise" />
+      <div className="flex min-h-[100dvh]">
+        <Sidebar />
+        <div className="min-w-0 flex-1">
+          <MobileHeader onMenu={() => setMobileMenuOpen(true)} />
+          <main className="mx-auto max-w-[1100px] px-4 py-5 sm:px-7 sm:py-8 xl:px-10">
+            <header className="reveal mb-8">
+              <div className="mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[.17em] text-[hsl(var(--primary))]"><BookOpen className="h-3.5 w-3.5" />sources</div>
+              <h1 className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Built in the open.<br /><span className="text-[hsl(var(--primary))]">Nothing hidden.</span></h1>
+              <p className="mt-4 max-w-[560px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">The entire Bigram AI project is open source. Read the code, follow how the model learns, and build on the same transparent foundation.</p>
+            </header>
+            <section className="reveal max-w-2xl rounded-[26px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] sm:p-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"><Github className="h-6 w-6" /></div>
+              <h2 className="display mt-6 text-2xl font-semibold tracking-[-.04em]">Bigram AI source code</h2>
+              <p className="mt-3 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">The source repository contains the app, the from-scratch word-level model, and the API that powers this workspace.</p>
+              <a data-testid="link-source-repository" href={SOURCE_REPOSITORY_URL} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-xs font-bold text-[hsl(var(--primary-foreground))] transition hover:brightness-110">View the source repository <ExternalLink className="h-3.5 w-3.5" /></a>
+              <div className="mt-8 border-t border-[hsl(var(--border))] pt-5 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]"><Sparkles className="mr-1.5 inline h-3.5 w-3.5 align-[-2px] text-[hsl(var(--accent))]" />Private model snapshots and conversation memory are kept separately from this public source project.</div>
+            </section>
+          </main>
+        </div>
+      </div>
+      {mobileMenuOpen && <MobileMenu onClose={() => setMobileMenuOpen(false)} />}
     </div>
   );
 }
@@ -350,7 +343,7 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
 }
 
 function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/sources" component={SourcesPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
