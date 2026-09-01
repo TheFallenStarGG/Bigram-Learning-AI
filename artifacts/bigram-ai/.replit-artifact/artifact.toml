@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Bigram AI"
+description = "A from-scratch conversational bigram language model that learns from each conversation, shows its evolving vocabulary and transition memory, and prepares timestamped learning snapshots for GitHub backup."
+version = "1.0.0"
+id = "artifacts/bigram-ai"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26237
+
+[services.development]
+run = "pnpm --filter @workspace/bigram-ai run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/bigram-ai", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/bigram-ai/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26237"
+BASE_PATH = "/"
