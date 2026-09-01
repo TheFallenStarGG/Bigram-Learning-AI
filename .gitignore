@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Runtime model snapshots are backup artifacts, not source files
+/data/model-snapshots/

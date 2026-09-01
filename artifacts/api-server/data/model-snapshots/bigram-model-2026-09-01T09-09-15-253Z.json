@@ -1,0 +1,72 @@
+{
+  "format": "bigram-ai/v1",
+  "createdAt": "2026-09-01T09:09:15.253Z",
+  "model": {
+    "vocabulary": {
+      ",": 1,
+      ".": 1,
+      "i": 1,
+      "am": 1,
+      "you": 1,
+      "about": 1,
+      "hello": 1,
+      "language": 1,
+      "teaching": 1
+    },
+    "transitions": {
+      ",": {
+        "i": 1
+      },
+      ".": {
+        "__END__": 1
+      },
+      "i": {
+        "am": 1
+      },
+      "am": {
+        "teaching": 1
+      },
+      "you": {
+        "about": 1
+      },
+      "about": {
+        "language": 1
+      },
+      "hello": {
+        ",": 1
+      },
+      "language": {
+        ".": 1
+      },
+      "teaching": {
+        "you": 1
+      },
+      "__START__": {
+        "hello": 1
+      }
+    },
+    "messageCount": 1,
+    "learningStartedAt": "2026-09-01T09:08:35.021Z"
+  },
+  "messages": [
+    {
+      "id": "ff26829f-f089-4d10-a1fc-b4ab32c39f0a",
+      "role": "user",
+      "content": "Hello, I am teaching you about language.",
+      "createdAt": "2026-09-01T09:09:15.141Z"
+    },
+    {
+      "id": "def72648-abc0-4cef-a1b6-1687f0578b41",
+      "role": "assistant",
+      "content": "hello, i am teaching you about language.",
+      "createdAt": "2026-09-01T09:09:15.141Z"
+    }
+  ],
+  "github": {
+    "configured": false,
+    "owner": "",
+    "repository": "",
+    "branch": "main",
+    "connected": false
+  }
+}

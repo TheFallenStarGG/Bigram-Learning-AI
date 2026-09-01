@@ -1,10 +1,11 @@
-# [Project name]
+# Bigram AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Bigram AI is a transparent, from-scratch conversational model that learns word-to-word transitions as users teach it.
 
 ## Run & Operate
 
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/bigram-ai run dev` — run the web app
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
@@ -22,15 +23,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/bigram-ai/src/App.tsx` — responsive chat and model observability workspace
+- `artifacts/api-server/src/lib/brain-service.ts` — tokenizer, bigram learner, generator, snapshots, and scheduler
+- `artifacts/api-server/src/routes/brain.ts` — model, chat, snapshot, and GitHub settings routes
+- `lib/db/src/schema/brain.ts` — persistent model state, messages, snapshots, and backup settings
+- `lib/api-spec/openapi.yaml` — source of truth for the generated API client and Zod contracts
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The model is intentionally a word-level bigram model: it learns only token frequencies and adjacent-token transition counts, with no pretrained weights or external AI calls.
+- PostgreSQL stores the live model state and conversation history so learning survives server restarts; snapshots also write complete JSON files locally.
+- A five-minute server-side timer creates a snapshot while the API process is active. GitHub is represented as an explicit backup boundary and never claims remote success without an authorized connection.
+- The frontend uses generated API hooks so the chat, metrics, snapshot history, and backup settings all consume the same contract.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Users can teach the model in a live chat, see vocabulary/bigram/message counts grow, inspect timestamped snapshots, save a snapshot immediately, and configure a future GitHub destination.
 
 ## User preferences
 
@@ -38,7 +46,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The GitHub panel stays marked “not connected” until a GitHub integration is authorized; local snapshots remain available in the meantime.
+- Keep `lib/api-spec/openapi.yaml` and generated clients in sync by running the API codegen command after contract changes.
 
 ## Pointers
 

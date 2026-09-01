@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: brain
+    description: Bigram model and conversation operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,106 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /brain/overview:
+    get:
+      operationId: getBrainOverview
+      tags: [brain]
+      summary: Get the current model overview
+      responses:
+        "200":
+          description: Current model statistics and backup state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrainOverview"
+  /brain/messages:
+    get:
+      operationId: getBrainMessages
+      tags: [brain]
+      summary: Get conversation messages
+      responses:
+        "200":
+          description: Conversation history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatMessage"
+  /brain/chat:
+    post:
+      operationId: sendBrainMessage
+      tags: [brain]
+      summary: Learn from a message and generate a response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatInput"
+      responses:
+        "200":
+          description: The new messages and updated model overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResult"
+        "400":
+          description: Invalid message
+  /brain/snapshots:
+    get:
+      operationId: getBrainSnapshots
+      tags: [brain]
+      summary: List model snapshots
+      responses:
+        "200":
+          description: Saved snapshot history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ModelSnapshot"
+    post:
+      operationId: createBrainSnapshot
+      tags: [brain]
+      summary: Save a model snapshot
+      responses:
+        "201":
+          description: Created snapshot
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ModelSnapshot"
+  /brain/github:
+    get:
+      operationId: getBrainGithub
+      tags: [brain]
+      summary: Get GitHub snapshot settings
+      responses:
+        "200":
+          description: GitHub settings and connection state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubSettings"
+    put:
+      operationId: updateBrainGithub
+      tags: [brain]
+      summary: Update GitHub snapshot settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GithubSettingsInput"
+      responses:
+        "200":
+          description: Updated GitHub settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GithubSettings"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +135,111 @@ components:
           type: string
       required:
         - status
+    ChatMessage:
+      type: object
+      required: [id, role, content, createdAt]
+      properties:
+        id:
+          type: string
+        role:
+          type: string
+          enum: [user, assistant]
+        content:
+          type: string
+        createdAt:
+          type: string
+    ChatInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 2000
+    BrainOverview:
+      type: object
+      required: [vocabulary, bigrams, messages, learningStartedAt, lastSnapshotAt, nextSnapshotAt, githubConfigured, githubConnected]
+      properties:
+        vocabulary:
+          type: number
+          minimum: 0
+        bigrams:
+          type: number
+          minimum: 0
+        messages:
+          type: number
+          minimum: 0
+        learningStartedAt:
+          type: string
+        lastSnapshotAt:
+          type: ["string", "null"]
+        nextSnapshotAt:
+          type: string
+        githubConfigured:
+          type: boolean
+        githubConnected:
+          type: boolean
+    ChatResult:
+      type: object
+      required: [userMessage, assistantMessage, overview]
+      properties:
+        userMessage:
+          $ref: "#/components/schemas/ChatMessage"
+        assistantMessage:
+          $ref: "#/components/schemas/ChatMessage"
+        overview:
+          $ref: "#/components/schemas/BrainOverview"
+    ModelSnapshot:
+      type: object
+      required: [id, filename, createdAt, vocabulary, bigrams, messages, status]
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        createdAt:
+          type: string
+        vocabulary:
+          type: number
+          minimum: 0
+        bigrams:
+          type: number
+          minimum: 0
+        messages:
+          type: number
+          minimum: 0
+        status:
+          type: string
+          enum: [local, github, failed]
+        error:
+          type: ["string", "null"]
+    GithubSettings:
+      type: object
+      required: [owner, repository, branch, configured, connected]
+      properties:
+        owner:
+          type: string
+        repository:
+          type: string
+        branch:
+          type: string
+        configured:
+          type: boolean
+        connected:
+          type: boolean
+        message:
+          type: string
+    GithubSettingsInput:
+      type: object
+      required: [owner, repository, branch]
+      properties:
+        owner:
+          type: string
+          maxLength: 100
+        repository:
+          type: string
+          maxLength: 100
+        branch:
+          type: string
+          maxLength: 100
 

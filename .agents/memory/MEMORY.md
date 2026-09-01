@@ -1,0 +1,1 @@
+- [Zod/OpenAPI compatibility](zod-codegen-compatibility.md) — current generated clients require avoiding integer schemas with the workspace's Zod 3 catalog.
