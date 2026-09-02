@@ -335,10 +335,12 @@ function Conversation({
   chat,
   username,
   onBack,
+  onNewChat,
 }: {
   chat: ChatSummary;
   username: string;
   onBack: () => void;
+  onNewChat: () => void;
 }) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState('');
@@ -386,7 +388,10 @@ function Conversation({
               <div className="flex flex-wrap items-center gap-2"><h1 className="display truncate text-[16px] font-semibold tracking-[-.035em]">{chat.title || 'Private conversation'}</h1><span className="mono rounded-full bg-[hsl(var(--muted))] px-2 py-1 text-[8px] uppercase tracking-[.1em] text-[hsl(var(--muted-foreground))]">{chat.type}</span></div>
               <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">{participants.length} {participants.length === 1 ? 'participant' : 'participants'} · messages refresh automatically</p>
             </div>
-            <button type="button" aria-label="Conversation details" onClick={() => document.getElementById(`participants-${chat.id}`)?.scrollIntoView({ behavior: 'smooth' })} className="hidden rounded-xl p-2 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] sm:block"><Settings2 className="h-4 w-4" /></button>
+            <div className="flex shrink-0 items-center gap-1">
+              <button type="button" data-testid="button-new-chat-from-conversation" onClick={onNewChat} className="flex items-center gap-1.5 rounded-xl border border-[hsl(var(--border))] px-2.5 py-2 text-[10px] font-bold text-[hsl(var(--primary))] transition hover:bg-[hsl(var(--primary)/.07)]"><Plus className="h-3.5 w-3.5" /><span className="hidden sm:inline">New chat</span></button>
+              <button type="button" aria-label="Conversation details" onClick={() => document.getElementById(`participants-${chat.id}`)?.scrollIntoView({ behavior: 'smooth' })} className="hidden rounded-xl p-2 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))] sm:block"><Settings2 className="h-4 w-4" /></button>
+            </div>
           </div>
         </div>
         <div id={`participants-${chat.id}`} className="scrollbar-thin mt-4 flex gap-2 overflow-x-auto pb-0.5">
@@ -459,7 +464,7 @@ export default function ChatsPage({ username, embedded = false }: ChatsPageProps
             <div className="mt-3 flex items-center gap-2 rounded-xl bg-[hsl(var(--muted)/.65)] px-3 py-2.5 text-[9px] leading-relaxed text-[hsl(var(--muted-foreground))]"><ShieldCheck className="h-3.5 w-3.5 shrink-0 text-[hsl(var(--primary))]" />Only invited participants can see a room.</div>
           </aside>
           <div className={`${selectedChat ? 'flex' : 'hidden lg:flex'} min-h-0`}>
-            {selectedChat ? <Conversation chat={selectedChat} username={username} onBack={() => setSelectedChatId(null)} /> : <div className="flex min-h-[590px] flex-1 items-center justify-center rounded-[24px] border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card)/.42)]"><div className="max-w-sm px-6 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))]"><Send className="h-6 w-6" /></div><h3 className="display mt-5 text-xl font-semibold tracking-[-.04em]">Choose a room</h3><p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">Select a chat on the left, or start a new one when you are ready.</p></div></div>}
+             {selectedChat ? <Conversation chat={selectedChat} username={username} onBack={() => setSelectedChatId(null)} onNewChat={() => setDialogMode('private')} /> : <div className="flex min-h-[590px] flex-1 items-center justify-center rounded-[24px] border border-dashed border-[hsl(var(--border))] bg-[hsl(var(--card)/.42)]"><div className="max-w-sm px-6 text-center"><div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[hsl(var(--primary)/.08)] text-[hsl(var(--primary))]"><Send className="h-6 w-6" /></div><h3 className="display mt-5 text-xl font-semibold tracking-[-.04em]">Choose a room</h3><p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--muted-foreground))]">Select a chat on the left, or start a new one when you are ready.</p></div></div>}
           </div>
         </main>
       </div>
