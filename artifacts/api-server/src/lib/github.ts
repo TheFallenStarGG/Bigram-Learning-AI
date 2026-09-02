@@ -105,6 +105,16 @@ export async function readPrivateFile(relativePath: string) {
   };
 }
 
+export async function listPrivateDirectory(relativePath: string) {
+  return (
+    (await githubRequest<GithubContent[]>(
+      `${contentsPath(relativePath)}?ref=${encodeURIComponent(SNAPSHOT_REPOSITORY.branch)}`,
+      undefined,
+      { allowNotFound: true },
+    )) ?? []
+  );
+}
+
 export async function writePrivateFile(input: {
   relativePath: string;
   content: string;

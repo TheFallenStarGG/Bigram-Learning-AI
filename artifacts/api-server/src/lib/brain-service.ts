@@ -271,7 +271,7 @@ export async function getMessages(username: string): Promise<PublicMessage[]> {
   return messages;
 }
 
-export async function sendMessage(username: string, prompt: string) {
+export async function learnAndRespond(prompt: string) {
   await ensureRemoteSnapshotLoaded();
   const state = await getState();
   learn(state, prompt);
@@ -289,6 +289,12 @@ export async function sendMessage(username: string, prompt: string) {
     createdAt: new Date(),
   };
 
+  await saveState(state);
+  return { userMessage, assistantMessage };
+}
+
+export async function sendMessage(username: string, prompt: string) {
+  const { userMessage, assistantMessage } = await learnAndRespond(prompt);
   const existingMessages = await readAccountChat(username);
   const messages: StoredChatMessage[] = [
     ...existingMessages,
@@ -302,7 +308,6 @@ export async function sendMessage(username: string, prompt: string) {
     },
   ];
   await writeAccountChat(username, messages);
-  await saveState(state);
   return {
     userMessage: {
       ...userMessage,

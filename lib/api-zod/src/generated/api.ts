@@ -254,3 +254,179 @@ export const UpdateBrainGithubResponse = zod.object({
 })
 
 
+/**
+ * @summary List private and group chats for the signed-in account
+ */
+export const GetChatsResponseItem = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['private', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+})
+export const GetChatsResponse = zod.array(GetChatsResponseItem)
+
+
+/**
+ * @summary Create a private or group chat
+ */
+export const createChatBodyParticipantUsernamesItemMin = 3;
+export const createChatBodyParticipantUsernamesItemMax = 32;
+
+
+export const createChatBodyParticipantUsernamesItemRegExp = new RegExp('^[A-Za-z0-9_-]+$');
+
+
+
+export const CreateChatBody = zod.object({
+  "type": zod.enum(['private', 'group']),
+  "participantUsernames": zod.array(zod.string().min(createChatBodyParticipantUsernamesItemMin).max(createChatBodyParticipantUsernamesItemMax).regex(createChatBodyParticipantUsernamesItemRegExp)).min(1),
+  "includeBrain": zod.boolean()
+})
+
+export const CreateChatResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['private', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+}).and(zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+}))
+
+
+/**
+ * @summary Get a private or group chat
+ */
+export const GetChatParams = zod.object({
+  "chatId": zod.coerce.string()
+})
+
+export const GetChatResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['private', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+}).and(zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+}))
+
+
+/**
+ * @summary Send a message to a private or group chat
+ */
+export const SendChatMessageParams = zod.object({
+  "chatId": zod.coerce.string()
+})
+
+export const sendChatMessageBodyContentMax = 2000;
+
+
+
+export const SendChatMessageBody = zod.object({
+  "content": zod.string().min(1).max(sendChatMessageBodyContentMax)
+})
+
+export const SendChatMessageResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['private', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+}).and(zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+}))
+
+

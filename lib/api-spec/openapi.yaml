@@ -14,6 +14,8 @@ tags:
     description: Local username and password account operations
   - name: brain
     description: Bigram model and conversation operations
+  - name: chats
+    description: Private and group chat operations
 paths:
   /healthz:
     get:
@@ -196,6 +198,89 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GithubSettings"
+  /chats:
+    get:
+      operationId: getChats
+      tags: [chats]
+      summary: List private and group chats for the signed-in account
+      responses:
+        "200":
+          description: Chat summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChatSummary"
+    post:
+      operationId: createChat
+      tags: [chats]
+      summary: Create a private or group chat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChatInput"
+      responses:
+        "201":
+          description: Created chat
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetail"
+        "400":
+          description: Invalid chat details
+        "404":
+          description: Participant account not found
+  /chats/{chatId}:
+    get:
+      operationId: getChat
+      tags: [chats]
+      summary: Get a private or group chat
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Chat detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetail"
+        "404":
+          description: Chat not found
+  /chats/{chatId}/messages:
+    post:
+      operationId: sendChatMessage
+      tags: [chats]
+      summary: Send a message to a private or group chat
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendChatMessageInput"
+      responses:
+        "200":
+          description: Updated chat detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetail"
+        "400":
+          description: Invalid message
+        "404":
+          description: Chat not found
 components:
   schemas:
     HealthStatus:
@@ -335,4 +420,86 @@ components:
         branch:
           type: string
           maxLength: 100
+    ChatParticipant:
+      type: object
+      required: [username, displayName, isBrain]
+      properties:
+        username:
+          type: string
+        displayName:
+          type: string
+        isBrain:
+          type: boolean
+    PrivateChatMessage:
+      type: object
+      required: [id, sender, content, createdAt]
+      properties:
+        id:
+          type: string
+        sender:
+          $ref: "#/components/schemas/ChatParticipant"
+        content:
+          type: string
+        createdAt:
+          type: string
+    ChatSummary:
+      type: object
+      required: [id, type, title, participants, includeBrain, createdAt, updatedAt, lastMessage]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [private, group]
+        title:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatParticipant"
+        includeBrain:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        lastMessage:
+          oneOf:
+            - $ref: "#/components/schemas/PrivateChatMessage"
+            - type: "null"
+    ChatDetail:
+      allOf:
+        - $ref: "#/components/schemas/ChatSummary"
+        - type: object
+          required: [messages]
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/PrivateChatMessage"
+    CreateChatInput:
+      type: object
+      required: [type, participantUsernames, includeBrain]
+      properties:
+        type:
+          type: string
+          enum: [private, group]
+        participantUsernames:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 3
+            maxLength: 32
+            pattern: "^[A-Za-z0-9_-]+$"
+        includeBrain:
+          type: boolean
+    SendChatMessageInput:
+      type: object
+      required: [content]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
 

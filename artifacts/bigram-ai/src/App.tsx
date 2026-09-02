@@ -25,6 +25,7 @@ import {
   Sparkles,
   TriangleAlert,
   UserRound,
+  UsersRound,
   X,
   Zap,
 } from 'lucide-react';
@@ -34,6 +35,7 @@ import {
   getGetBrainMessagesQueryKey,
   getGetBrainOverviewQueryKey,
   getGetBrainSnapshotsQueryKey,
+  getGetChatsQueryKey,
   useCreateBrainSnapshot,
   useGetAuthSession,
   useGetBrainGithub,
@@ -50,6 +52,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Route, Router as WouterRouter, Switch, useLocation } from 'wouter';
 import NotFound from '@/pages/not-found';
+import ChatsPage from '@/pages/chats';
 
 const queryClient = new QueryClient();
 const SOURCE_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI';
@@ -122,6 +125,7 @@ function Sidebar() {
   const [location, navigate] = useLocation();
   const { username, signOut, signingOut } = useAuth();
   const sourcesActive = location === '/sources';
+  const chatsActive = location === '/chats';
 
   return (
     <aside className="hidden min-h-[100dvh] w-[248px] shrink-0 flex-col bg-[hsl(var(--sidebar))] px-4 py-5 text-[hsl(var(--sidebar-foreground))] lg:flex">
@@ -135,10 +139,15 @@ function Sidebar() {
 
       <div className="mt-12 px-2">
         <div className="mono mb-3 text-[9px] uppercase tracking-[.18em] text-[hsl(var(--sidebar-foreground)/.42)]">Workspace</div>
-        <button data-testid="button-nav-workspace" onClick={() => navigate('/')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${!sourcesActive ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}>
+        <button data-testid="button-nav-workspace" onClick={() => navigate('/')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${!sourcesActive && !chatsActive ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}>
           <MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />
           Live conversation
-          {!sourcesActive && <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />}
+           {!sourcesActive && !chatsActive && <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />}
+        </button>
+        <button data-testid="button-nav-chats" onClick={() => navigate('/chats')} className={`mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm transition hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))] ${chatsActive ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-[hsl(var(--sidebar-foreground))]' : 'text-[hsl(var(--sidebar-foreground)/.62)]'}`}>
+          <UsersRound className="h-4 w-4" />
+          Chats
+          {chatsActive && <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />}
         </button>
         <div className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[hsl(var(--sidebar-foreground)/.56)]">
           <Network className="h-4 w-4" />
@@ -416,6 +425,7 @@ function AccountGate({ initialMessage, onAuthenticated }: { initialMessage?: str
     queryClient.invalidateQueries({ queryKey: getGetBrainOverviewQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetBrainSnapshotsQueryKey() });
     queryClient.invalidateQueries({ queryKey: getGetBrainGithubQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetChatsQueryKey() });
     onAuthenticated(session);
   };
 
@@ -512,7 +522,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
-  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">Little Brain AI</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-12 flex items-center gap-3 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]"><UserRound className="h-3.5 w-3.5" /></div><div className="min-w-0 flex-1"><div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div><div data-testid="text-mobile-username" className="truncate text-[11px] font-semibold">{username}</div></div><button data-testid="button-mobile-sign-out" type="button" onClick={signOut} disabled={signingOut} className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.58)]"><LogOut className="h-3.5 w-3.5" /></button></div><button data-testid="button-mobile-nav-workspace" onClick={() => goTo('/')} className={`mt-7 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button data-testid="button-mobile-nav-sources" onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
+  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">Little Brain AI</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-12 flex items-center gap-3 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]"><UserRound className="h-3.5 w-3.5" /></div><div className="min-w-0 flex-1"><div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div><div data-testid="text-mobile-username" className="truncate text-[11px] font-semibold">{username}</div></div><button data-testid="button-mobile-sign-out" type="button" onClick={signOut} disabled={signingOut} className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.58)]"><LogOut className="h-3.5 w-3.5" /></button></div><button data-testid="button-mobile-nav-workspace" onClick={() => goTo('/')} className={`mt-7 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' && location !== '/chats' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button data-testid="button-mobile-nav-chats" onClick={() => goTo('/chats')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/chats' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><UsersRound className="h-4 w-4" />Chats</button><button data-testid="button-mobile-nav-sources" onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
 }
 
 function Home() {
@@ -576,6 +586,21 @@ function SourcesPage() {
   );
 }
 
+function ChatsRoute({ username }: { username: string }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <div className="app-shell flex min-h-[100dvh]">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <MobileHeader onMenu={() => setMobileMenuOpen(true)} />
+        <ChatsPage username={username} embedded />
+      </div>
+      {mobileMenuOpen && <MobileMenu onClose={() => setMobileMenuOpen(false)} />}
+    </div>
+  );
+}
+
 function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
@@ -594,11 +619,12 @@ function AuthenticatedApp({ session }: { session: { username: string } }) {
         queryClient.invalidateQueries({ queryKey: getGetBrainOverviewQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetBrainSnapshotsQueryKey() });
         queryClient.invalidateQueries({ queryKey: getGetBrainGithubQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetChatsQueryKey() });
       },
     });
   };
 
-  return <AuthContext.Provider value={{ username: session.username, signOut, signingOut: logout.isPending }}><Router /></AuthContext.Provider>;
+  return <AuthContext.Provider value={{ username: session.username, signOut, signingOut: logout.isPending }}><Router username={session.username} /></AuthContext.Provider>;
 }
 
 function AuthAwareApp({ disclaimerAcknowledged }: { disclaimerAcknowledged: boolean }) {
@@ -616,8 +642,8 @@ function AuthAwareApp({ disclaimerAcknowledged }: { disclaimerAcknowledged: bool
   return <AccountGate initialMessage={authQuery.isError ? 'The account service is taking a moment. Try again when it is ready.' : authQuery.data?.message} onAuthenticated={(nextSession) => queryClient.setQueryData(getGetAuthSessionQueryKey(), nextSession)} />;
 }
 
-function Router() {
-  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/sources" component={SourcesPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
+function Router({ username }: { username: string }) {
+  return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/sources" component={SourcesPage} /><Route path="/chats"><ChatsRoute username={username} /></Route><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {

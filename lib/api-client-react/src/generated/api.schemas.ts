@@ -116,3 +116,67 @@ export interface GithubSettingsInput {
   branch: string;
 }
 
+export interface ChatParticipant {
+  username: string;
+  displayName: string;
+  isBrain: boolean;
+}
+
+export interface PrivateChatMessage {
+  id: string;
+  sender: ChatParticipant;
+  content: string;
+  createdAt: string;
+}
+
+export type ChatSummaryType = typeof ChatSummaryType[keyof typeof ChatSummaryType];
+
+
+export const ChatSummaryType = {
+  private: 'private',
+  group: 'group',
+} as const;
+
+export interface ChatSummary {
+  id: string;
+  type: ChatSummaryType;
+  title: string;
+  participants: ChatParticipant[];
+  includeBrain: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: PrivateChatMessage | null;
+}
+
+export type ChatDetail = ChatSummary & {
+  messages: PrivateChatMessage[];
+};
+
+export type CreateChatInputType = typeof CreateChatInputType[keyof typeof CreateChatInputType];
+
+
+export const CreateChatInputType = {
+  private: 'private',
+  group: 'group',
+} as const;
+
+export interface CreateChatInput {
+  type: CreateChatInputType;
+  /**
+     * @minItems 1
+     * @items.minLength 3
+     * @items.maxLength 32
+     * @items.pattern ^[A-Za-z0-9_-]+$
+     */
+  participantUsernames: string[];
+  includeBrain: boolean;
+}
+
+export interface SendChatMessageInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  content: string;
+}
+

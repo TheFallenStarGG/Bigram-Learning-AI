@@ -1,12 +1,13 @@
 import { createHmac, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
-import { readPrivateFile, writePrivateFile } from "./github";
+import { listPrivateDirectory, readPrivateFile, writePrivateFile } from "./github";
 
 const scrypt = promisify(scryptCallback);
 const SESSION_COOKIE = "bigram_session";
 const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 30;
 const ACCOUNT_FORMAT = "bigram-ai/account/v1";
 const CHAT_FORMAT = "bigram-ai/chat/v1";
+const ROOM_FORMAT = "bigram-ai/room/v1";
 const SESSION_SECRET =
   process.env.SESSION_SECRET ??
   (process.env.NODE_ENV === "production"
@@ -36,6 +37,30 @@ type StoredAccount = {
   createdAt: string;
 };
 
+export type StoredRoomParticipant = {
+  username: string;
+  isBrain: boolean;
+};
+
+export type StoredRoomMessage = {
+  id: string;
+  senderUsername: string;
+  content: string;
+  createdAt: string;
+};
+
+export type StoredChatRoom = {
+  format: typeof ROOM_FORMAT;
+  id: string;
+  type: "private" | "group";
+  createdBy: string;
+  participants: StoredRoomParticipant[];
+  includeBrain: boolean;
+  createdAt: string;
+  updatedAt: string;
+  messages: StoredRoomMessage[];
+};
+
 function normalizeUsername(username: string) {
   return username.trim().toLowerCase();
 }
@@ -46,6 +71,10 @@ function accountPath(username: string) {
 
 function chatPath(username: string) {
   return `snapshots/${normalizeUsername(username)}/chat-history.json`;
+}
+
+function roomPath(id: string) {
+  return `chats/${id}.json`;
 }
 
 function sign(value: string) {
@@ -111,6 +140,10 @@ async function readAccount(username: string) {
     throw new Error("The account file has an invalid format.");
   }
   return parsed as StoredAccount;
+}
+
+export async function accountExists(username: string) {
+  return (await readAccount(username)) !== null;
 }
 
 async function hashPassword(password: string, salt = randomBytes(16)) {
@@ -223,6 +256,119 @@ export async function writeAccountChat(username: string, messages: StoredChatMes
       2,
     ),
     message: `Update chat history for ${normalizeUsername(username)}`,
+  });
+}
+
+function parseStoredRoomMessage(value: unknown): StoredRoomMessage {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("id" in value) ||
+    !("senderUsername" in value) ||
+    !("content" in value) ||
+    !("createdAt" in value) ||
+    typeof value.id !== "string" ||
+    typeof value.senderUsername !== "string" ||
+    typeof value.content !== "string" ||
+    typeof value.createdAt !== "string"
+  ) {
+    throw new Error("The chat room contains an invalid message.");
+  }
+  return {
+    id: value.id,
+    senderUsername: normalizeUsername(value.senderUsername),
+    content: value.content,
+    createdAt: value.createdAt,
+  };
+}
+
+function parseStoredRoom(value: unknown, fallbackId?: string): StoredChatRoom {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    !("format" in value) ||
+    value.format !== ROOM_FORMAT ||
+    !("id" in value) ||
+    typeof value.id !== "string" ||
+    (fallbackId && value.id !== fallbackId) ||
+    !("type" in value) ||
+    (value.type !== "private" && value.type !== "group") ||
+    !("createdBy" in value) ||
+    typeof value.createdBy !== "string" ||
+    !("participants" in value) ||
+    !Array.isArray(value.participants) ||
+    !("includeBrain" in value) ||
+    typeof value.includeBrain !== "boolean" ||
+    !("createdAt" in value) ||
+    typeof value.createdAt !== "string" ||
+    !("updatedAt" in value) ||
+    typeof value.updatedAt !== "string" ||
+    !("messages" in value) ||
+    !Array.isArray(value.messages)
+  ) {
+    throw new Error("The chat room file has an invalid format.");
+  }
+
+  const participants = value.participants.map((participant) => {
+    if (
+      typeof participant !== "object" ||
+      participant === null ||
+      !("username" in participant) ||
+      !("isBrain" in participant) ||
+      typeof participant.username !== "string" ||
+      typeof participant.isBrain !== "boolean"
+    ) {
+      throw new Error("The chat room contains an invalid participant.");
+    }
+    return {
+      username: normalizeUsername(participant.username),
+      isBrain: participant.isBrain,
+    };
+  });
+
+  return {
+    format: ROOM_FORMAT,
+    id: value.id,
+    type: value.type,
+    createdBy: normalizeUsername(value.createdBy),
+    participants,
+    includeBrain: value.includeBrain,
+    createdAt: value.createdAt,
+    updatedAt: value.updatedAt,
+    messages: value.messages.map(parseStoredRoomMessage),
+  };
+}
+
+export async function readChatRoom(id: string) {
+  const file = await readPrivateFile(roomPath(id));
+  if (!file) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(file.content);
+  } catch {
+    throw new Error("The chat room file is not valid JSON.");
+  }
+  return parseStoredRoom(parsed, id);
+}
+
+export async function listChatRooms() {
+  const directory = await listPrivateDirectory("chats");
+  const roomFiles = directory.filter(
+    (item) => item.type === "file" && item.name.endsWith(".json"),
+  );
+  return Promise.all(
+    roomFiles.map(async (item) => {
+      const id = item.name.slice(0, -".json".length);
+      return readChatRoom(id);
+    }),
+  ).then((rooms) => rooms.filter((room): room is StoredChatRoom => room !== null));
+}
+
+export async function writeChatRoom(room: StoredChatRoom) {
+  await writePrivateFile({
+    relativePath: roomPath(room.id),
+    content: JSON.stringify(room, null, 2),
+    message: `Update chat room ${room.id}`,
   });
 }
 
