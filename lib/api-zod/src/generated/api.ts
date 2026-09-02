@@ -23,6 +23,7 @@ export const HealthCheckResponse = zod.object({
 export const GetAuthSessionResponse = zod.object({
   "authenticated": zod.boolean(),
   "username": zod.string().nullable(),
+  "isAdmin": zod.boolean(),
   "message": zod.string().optional()
 })
 
@@ -48,6 +49,7 @@ export const SignupBody = zod.object({
 export const SignupResponse = zod.object({
   "authenticated": zod.boolean(),
   "username": zod.string().nullable(),
+  "isAdmin": zod.boolean(),
   "message": zod.string().optional()
 })
 
@@ -73,6 +75,7 @@ export const LoginBody = zod.object({
 export const LoginResponse = zod.object({
   "authenticated": zod.boolean(),
   "username": zod.string().nullable(),
+  "isAdmin": zod.boolean(),
   "message": zod.string().optional()
 })
 
@@ -83,6 +86,7 @@ export const LoginResponse = zod.object({
 export const LogoutResponse = zod.object({
   "authenticated": zod.boolean(),
   "username": zod.string().nullable(),
+  "isAdmin": zod.boolean(),
   "message": zod.string().optional()
 })
 
@@ -484,5 +488,126 @@ export const SendChatMessageResponse = zod.object({
   "createdAt": zod.string()
 }))
 }))
+
+
+/**
+ * @summary List accounts for administrators
+ */
+export const GetAdminAccountsResponseItem = zod.object({
+  "username": zod.string(),
+  "createdAt": zod.string(),
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean()
+})
+export const GetAdminAccountsResponse = zod.array(GetAdminAccountsResponseItem)
+
+
+/**
+ * @summary List AI-involving chats for administrators
+ */
+export const GetAdminChatsResponseItem = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['direct', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+})
+export const GetAdminChatsResponse = zod.array(GetAdminChatsResponseItem)
+
+
+/**
+ * @summary Get an AI-involving chat for administrators
+ */
+export const GetAdminChatParams = zod.object({
+  "chatId": zod.coerce.string()
+})
+
+export const GetAdminChatResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['direct', 'group']),
+  "title": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+}).and(zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+}))
+
+
+/**
+ * @summary Ban an account and delete its saved chat history
+ */
+export const BanAdminAccountParams = zod.object({
+  "username": zod.coerce.string()
+})
+
+export const BanAdminAccountResponse = zod.object({
+  "username": zod.string(),
+  "createdAt": zod.string(),
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean()
+})
+
+
+/**
+ * @summary Grant administrator access to an account
+ */
+export const grantAdminBodyUsernameMin = 3;
+export const grantAdminBodyUsernameMax = 32;
+
+
+export const grantAdminBodyUsernameRegExp = new RegExp('^[A-Za-z0-9_-]+$');
+
+
+export const GrantAdminBody = zod.object({
+  "username": zod.string().min(grantAdminBodyUsernameMin).max(grantAdminBodyUsernameMax).regex(grantAdminBodyUsernameRegExp)
+})
+
+export const GrantAdminResponse = zod.object({
+  "username": zod.string(),
+  "createdAt": zod.string(),
+  "isAdmin": zod.boolean(),
+  "isBanned": zod.boolean()
+})
 
 

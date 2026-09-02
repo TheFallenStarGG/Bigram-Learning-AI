@@ -1,4 +1,4 @@
-import { Router, type IRouter, type Request, type Response } from "express";
+import { Router, type IRouter, type Response } from "express";
 import {
   GetAuthSessionResponse,
   LoginBody,
@@ -8,19 +8,12 @@ import {
   authenticateAccount,
   createAccount,
   createSessionCookie,
-  readSessionCookie,
+  getAuthSession,
   SESSION_COOKIE,
   SESSION_MAX_AGE_SECONDS,
 } from "../lib/auth-service";
 
 const router: IRouter = Router();
-
-function sessionFromRequest(req: Request) {
-  const username = readSessionCookie(req.cookies?.[SESSION_COOKIE]);
-  return username
-    ? { authenticated: true, username, message: "Account session active." }
-    : { authenticated: false, username: null, message: "Sign in to continue." };
-}
 
 function setSession(res: Response, username: string) {
   res.cookie(SESSION_COOKIE, createSessionCookie(username), {
@@ -32,8 +25,12 @@ function setSession(res: Response, username: string) {
   });
 }
 
-router.get("/auth/session", (req, res) => {
-  res.json(GetAuthSessionResponse.parse(sessionFromRequest(req)));
+router.get("/auth/session", async (req, res, next) => {
+  try {
+    res.json(GetAuthSessionResponse.parse(await getAuthSession(req.cookies?.[SESSION_COOKIE])));
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.post("/auth/signup", async (req, res, next) => {
@@ -43,8 +40,7 @@ router.post("/auth/signup", async (req, res, next) => {
     setSession(res, username);
     res.json(
       GetAuthSessionResponse.parse({
-        authenticated: true,
-        username,
+        ...(await getAuthSession(createSessionCookie(username))),
         message: "Account created. Your private chat is ready.",
       }),
     );
@@ -70,14 +66,17 @@ router.post("/auth/login", async (req, res, next) => {
     setSession(res, username);
     res.json(
       GetAuthSessionResponse.parse({
-        authenticated: true,
-        username,
+        ...(await getAuthSession(createSessionCookie(username))),
         message: "Welcome back. Your private chat has been restored.",
       }),
     );
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       res.status(400).json({ error: "Enter your username and password." });
+      return;
+    }
+    if (error instanceof Error && error.name === "BannedAccountError") {
+      res.status(403).json({ error: error.message });
       return;
     }
     if (error instanceof Error && error.name === "InvalidCredentialsError") {
@@ -94,6 +93,7 @@ router.post("/auth/logout", (req, res) => {
     GetAuthSessionResponse.parse({
       authenticated: false,
       username: null,
+      isAdmin: false,
       message: "Signed out.",
     }),
   );

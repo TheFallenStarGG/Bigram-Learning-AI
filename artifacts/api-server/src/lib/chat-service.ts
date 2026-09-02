@@ -1,4 +1,13 @@
-import { accountExists, listChatRooms, readChatRoom, writeChatRoom, type StoredChatRoom } from "./auth-service";
+import {
+  accountExists,
+  listAccounts,
+  listChatRooms,
+  readAccountChat,
+  readChatRoom,
+  writeChatRoom,
+  type AdminAccount,
+  type StoredChatRoom,
+} from "./auth-service";
 import { learnAndRespond } from "./brain-service";
 
 type ChatType = "private" | "group";
@@ -29,6 +38,21 @@ export type ChatSummary = {
 };
 
 export type ChatDetail = ChatSummary & {
+  messages: ChatMessage[];
+};
+
+export type AdminChatSummary = {
+  id: string;
+  type: "direct" | "group";
+  title: string;
+  participants: ChatParticipant[];
+  includeBrain: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: ChatMessage | null;
+};
+
+export type AdminChatDetail = AdminChatSummary & {
   messages: ChatMessage[];
 };
 
@@ -116,6 +140,71 @@ function toPublic(room: StoredChatRoom): ChatDetail {
     lastMessage: messages.at(-1) ?? null,
     messages,
   };
+}
+
+function toAdminDirectChat(account: AdminAccount, messages: Awaited<ReturnType<typeof readAccountChat>>): AdminChatDetail {
+  const brain: ChatParticipant = {
+    username: "little-brain",
+    displayName: "Little Brain",
+    isBrain: true,
+  };
+  const user: ChatParticipant = {
+    username: account.username,
+    displayName: displayName(account.username),
+    isBrain: false,
+  };
+  const publicMessages = messages.map((message) => ({
+    id: message.id,
+    sender: message.role === "assistant" ? brain : user,
+    content: message.content,
+    createdAt: message.createdAt,
+  }));
+  const updatedAt = publicMessages.at(-1)?.createdAt ?? account.createdAt;
+  return {
+    id: `direct:${account.username}`,
+    type: "direct",
+    title: `${user.displayName} and Little Brain`,
+    participants: [user, brain],
+    includeBrain: true,
+    createdAt: account.createdAt,
+    updatedAt,
+    lastMessage: publicMessages.at(-1) ?? null,
+    messages: publicMessages,
+  };
+}
+
+function toAdminGroupChat(room: StoredChatRoom): AdminChatDetail {
+  const chat = toPublic(room);
+  return {
+    ...chat,
+    id: `room:${chat.id}`,
+    type: "group",
+  };
+}
+
+export async function getAdminChats(): Promise<AdminChatSummary[]> {
+  const [accounts, rooms] = await Promise.all([listAccounts(), listChatRooms()]);
+  const directChats = await Promise.all(
+    accounts.map(async (account) => toAdminDirectChat(account, await readAccountChat(account.username))),
+  );
+  return [...directChats, ...rooms.filter((room) => room.includeBrain).map(toAdminGroupChat)]
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))
+    .map(({ messages: _messages, ...summary }) => summary);
+}
+
+export async function getAdminChat(id: string): Promise<AdminChatDetail | null> {
+  if (id.startsWith("direct:")) {
+    const username = id.slice("direct:".length);
+    const account = (await listAccounts()).find((item) => item.username === username);
+    if (!account) return null;
+    return toAdminDirectChat(account, await readAccountChat(account.username));
+  }
+  if (id.startsWith("room:")) {
+    const room = await readChatRoom(id.slice("room:".length));
+    if (!room || !room.includeBrain) return null;
+    return toAdminGroupChat(room);
+  }
+  return null;
 }
 
 async function getAuthorizedRoom(username: string, chatId: string) {

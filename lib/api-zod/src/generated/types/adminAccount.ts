@@ -6,10 +6,9 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface AuthSession {
-  authenticated: boolean;
-  /** @nullable */
-  username: string | null;
+export interface AdminAccount {
+  username: string;
+  createdAt: string;
   isAdmin: boolean;
-  message?: string;
+  isBanned: boolean;
 }

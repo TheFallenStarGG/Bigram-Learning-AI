@@ -16,6 +16,8 @@ tags:
     description: Bigram model and conversation operations
   - name: chats
     description: Private and group chat operations
+  - name: admin
+    description: Administrator-only account and AI conversation operations
 paths:
   /healthz:
     get:
@@ -310,6 +312,96 @@ paths:
           description: Invalid message
         "404":
           description: Chat not found
+  /admin/accounts:
+    get:
+      operationId: getAdminAccounts
+      tags: [admin]
+      summary: List accounts for administrators
+      responses:
+        "200":
+          description: Account status list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminAccount"
+  /admin/chats:
+    get:
+      operationId: getAdminChats
+      tags: [admin]
+      summary: List AI-involving chats for administrators
+      responses:
+        "200":
+          description: AI conversation summaries only
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AdminChatSummary"
+  /admin/chats/{chatId}:
+    get:
+      operationId: getAdminChat
+      tags: [admin]
+      summary: Get an AI-involving chat for administrators
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: AI conversation detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminChatDetail"
+        "404":
+          description: AI conversation not found
+  /admin/accounts/{username}/ban:
+    post:
+      operationId: banAdminAccount
+      tags: [admin]
+      summary: Ban an account and delete its saved chat history
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Banned account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccount"
+        "404":
+          description: Account not found
+  /admin/admins:
+    post:
+      operationId: grantAdmin
+      tags: [admin]
+      summary: Grant administrator access to an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminGrantAdminInput"
+      responses:
+        "200":
+          description: Account with administrator access
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAccount"
+        "400":
+          description: Invalid username
+        "404":
+          description: Account not found
 components:
   schemas:
     HealthStatus:
@@ -321,12 +413,14 @@ components:
         - status
     AuthSession:
       type: object
-      required: [authenticated, username]
+      required: [authenticated, username, isAdmin]
       properties:
         authenticated:
           type: boolean
         username:
           type: ["string", "null"]
+        isAdmin:
+          type: boolean
         message:
           type: string
     AccountInput:
@@ -541,4 +635,72 @@ components:
           type: string
           minLength: 1
           maxLength: 80
+    AdminAccount:
+      type: object
+      required: [username, createdAt, isAdmin, isBanned]
+      properties:
+        username:
+          type: string
+        createdAt:
+          type: string
+        isAdmin:
+          type: boolean
+        isBanned:
+          type: boolean
+    AdminChatMessage:
+      type: object
+      required: [id, sender, content, createdAt]
+      properties:
+        id:
+          type: string
+        sender:
+          $ref: "#/components/schemas/ChatParticipant"
+        content:
+          type: string
+        createdAt:
+          type: string
+    AdminChatSummary:
+      type: object
+      required: [id, type, title, participants, includeBrain, createdAt, updatedAt, lastMessage]
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [direct, group]
+        title:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChatParticipant"
+        includeBrain:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        lastMessage:
+          oneOf:
+            - $ref: "#/components/schemas/AdminChatMessage"
+            - type: "null"
+    AdminChatDetail:
+      allOf:
+        - $ref: "#/components/schemas/AdminChatSummary"
+        - type: object
+          required: [messages]
+          properties:
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/AdminChatMessage"
+    AdminGrantAdminInput:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          pattern: "^[A-Za-z0-9_-]+$"
 

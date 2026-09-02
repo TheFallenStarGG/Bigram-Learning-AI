@@ -414,6 +414,26 @@ Only a salted password hash is stored. Successful signup and login set an
 HTTP-only signed session cookie. The session cookie contains no password and
 does not require an account row in PostgreSQL.
 
+Administrator status is stored on the private account record and checked by
+the backend for every admin request. The `/admin` workspace is limited to
+direct AI conversations and group conversations that include Little Brain;
+user-only rooms are never returned. Administrators can view account status,
+grant administrator access to an existing username, and ban accounts. A ban
+blocks future logins, invalidates the account's server-checked sessions,
+deletes its direct AI chat history, and removes that account's messages from
+shared rooms. The repository-owner account is initialized as the first
+administrator.
+
+Admin endpoints:
+
+```http
+GET /api/admin/accounts
+GET /api/admin/chats
+GET /api/admin/chats/:chatId
+POST /api/admin/accounts/:username/ban
+POST /api/admin/admins
+```
+
 ### Model overview
 
 ```http
@@ -633,6 +653,7 @@ The frontend currently provides:
 
 - Disclaimer-first launch flow followed by local account creation/sign-in
 - Signed-in username display and sign-out
+- Administrator-only control room with AI chat review and account moderation
 - Live chat with Enter-to-submit and Shift+Enter for a newline
 - Vocabulary, bigram, and message metrics
 - Snapshot history

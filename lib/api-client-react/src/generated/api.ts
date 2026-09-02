@@ -21,6 +21,10 @@ import type {
 
 import type {
   AccountInput,
+  AdminAccount,
+  AdminChatDetail,
+  AdminChatSummary,
+  AdminGrantAdminInput,
   AuthSession,
   BrainOverview,
   ChatDetail,
@@ -1320,5 +1324,378 @@ export const useSendChatMessage = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSendChatMessageMutationOptions(options));
+    }
+
+export const getGetAdminAccountsUrl = () => {
+
+
+
+
+  return `/api/admin/accounts`
+}
+
+/**
+ * @summary List accounts for administrators
+ */
+export const getAdminAccounts = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminAccount[]> => {
+
+  return customFetch<AdminAccount[]>(getGetAdminAccountsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminAccountsQueryKey = () => {
+    return [
+    `/api/admin/accounts`
+    ] as const;
+    }
+
+
+export const getGetAdminAccountsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminAccounts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminAccountsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminAccounts>>> = ({ signal }) => getAdminAccounts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminAccountsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminAccounts>>>
+export type GetAdminAccountsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List accounts for administrators
+ */
+
+export function useGetAdminAccounts<TData = Awaited<ReturnType<typeof getAdminAccounts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminAccounts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminAccountsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminChatsUrl = () => {
+
+
+
+
+  return `/api/admin/chats`
+}
+
+/**
+ * @summary List AI-involving chats for administrators
+ */
+export const getAdminChats = async ( options?: Parameters<typeof customFetch>[1]): Promise<AdminChatSummary[]> => {
+
+  return customFetch<AdminChatSummary[]>(getGetAdminChatsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminChatsQueryKey = () => {
+    return [
+    `/api/admin/chats`
+    ] as const;
+    }
+
+
+export const getGetAdminChatsQueryOptions = <TData = Awaited<ReturnType<typeof getAdminChats>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminChats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminChatsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminChats>>> = ({ signal }) => getAdminChats({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminChats>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminChatsQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminChats>>>
+export type GetAdminChatsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List AI-involving chats for administrators
+ */
+
+export function useGetAdminChats<TData = Awaited<ReturnType<typeof getAdminChats>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminChats>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminChatsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetAdminChatUrl = (chatId: string,) => {
+
+
+
+
+  return `/api/admin/chats/${chatId}`
+}
+
+/**
+ * @summary Get an AI-involving chat for administrators
+ */
+export const getAdminChat = async (chatId: string, options?: Parameters<typeof customFetch>[1]): Promise<AdminChatDetail> => {
+
+  return customFetch<AdminChatDetail>(getGetAdminChatUrl(chatId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAdminChatQueryKey = (chatId: string,) => {
+    return [
+    `/api/admin/chats/${chatId}`
+    ] as const;
+    }
+
+
+export const getGetAdminChatQueryOptions = <TData = Awaited<ReturnType<typeof getAdminChat>>, TError = ErrorType<void>>(chatId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminChat>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAdminChatQueryKey(chatId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAdminChat>>> = ({ signal }) => getAdminChat(chatId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: chatId !== null && chatId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAdminChat>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAdminChatQueryResult = NonNullable<Awaited<ReturnType<typeof getAdminChat>>>
+export type GetAdminChatQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get an AI-involving chat for administrators
+ */
+
+export function useGetAdminChat<TData = Awaited<ReturnType<typeof getAdminChat>>, TError = ErrorType<void>>(
+ chatId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAdminChat>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAdminChatQueryOptions(chatId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getBanAdminAccountUrl = (username: string,) => {
+
+
+
+
+  return `/api/admin/accounts/${username}/ban`
+}
+
+/**
+ * @summary Ban an account and delete its saved chat history
+ */
+export const banAdminAccount = async (username: string, options?: Parameters<typeof customFetch>[1]): Promise<AdminAccount> => {
+
+  return customFetch<AdminAccount>(getBanAdminAccountUrl(username),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getBanAdminAccountMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof banAdminAccount>>, TError,{username: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof banAdminAccount>>, TError,{username: string}, TContext> => {
+
+const mutationKey = ['banAdminAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof banAdminAccount>>, {username: string}> = (props) => {
+          const {username} = props ?? {};
+
+          return  banAdminAccount(username,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BanAdminAccountMutationResult = NonNullable<Awaited<ReturnType<typeof banAdminAccount>>>
+
+    export type BanAdminAccountMutationError = ErrorType<void>
+
+    /**
+ * @summary Ban an account and delete its saved chat history
+ */
+export const useBanAdminAccount = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof banAdminAccount>>, TError,{username: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof banAdminAccount>>,
+        TError,
+        {username: string},
+        TContext
+      > => {
+      return useMutation(getBanAdminAccountMutationOptions(options));
+    }
+
+export const getGrantAdminUrl = () => {
+
+
+
+
+  return `/api/admin/admins`
+}
+
+/**
+ * @summary Grant administrator access to an account
+ */
+export const grantAdmin = async (adminGrantAdminInput: AdminGrantAdminInput, options?: Parameters<typeof customFetch>[1]): Promise<AdminAccount> => {
+
+  return customFetch<AdminAccount>(getGrantAdminUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(adminGrantAdminInput)
+  }
+);}
+
+
+
+
+
+export const getGrantAdminMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof grantAdmin>>, TError,{data: BodyType<AdminGrantAdminInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof grantAdmin>>, TError,{data: BodyType<AdminGrantAdminInput>}, TContext> => {
+
+const mutationKey = ['grantAdmin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof grantAdmin>>, {data: BodyType<AdminGrantAdminInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  grantAdmin(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GrantAdminMutationResult = NonNullable<Awaited<ReturnType<typeof grantAdmin>>>
+    export type GrantAdminMutationBody = BodyType<AdminGrantAdminInput>
+    export type GrantAdminMutationError = ErrorType<void>
+
+    /**
+ * @summary Grant administrator access to an account
+ */
+export const useGrantAdmin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof grantAdmin>>, TError,{data: BodyType<AdminGrantAdminInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof grantAdmin>>,
+        TError,
+        {data: BodyType<AdminGrantAdminInput>},
+        TContext
+      > => {
+      return useMutation(getGrantAdminMutationOptions(options));
     }
 

@@ -20,17 +20,17 @@ import {
   renameChat,
   sendChatMessage,
 } from "../lib/chat-service";
-import { readSessionCookie } from "../lib/auth-service";
+import { getSessionAccount, SESSION_COOKIE } from "../lib/auth-service";
 
 const router: IRouter = Router();
 
-function requireUsername(req: Request, res: Response) {
-  const username = readSessionCookie(req.cookies?.bigram_session);
-  if (!username) {
+async function requireUsername(req: Request, res: Response) {
+  const account = await getSessionAccount(req.cookies?.[SESSION_COOKIE]);
+  if (!account) {
     res.status(401).json({ error: "Sign in to use private chats." });
     return null;
   }
-  return username;
+  return account.username;
 }
 
 function handleChatError(error: unknown, res: Response) {
@@ -59,7 +59,7 @@ function handleChatError(error: unknown, res: Response) {
 
 router.get("/chats", async (req, res, next) => {
   try {
-    const username = requireUsername(req, res);
+    const username = await requireUsername(req, res);
     if (!username) return;
     res.json(GetChatsResponse.parse(await getChats(username)));
   } catch (error) {
@@ -69,7 +69,7 @@ router.get("/chats", async (req, res, next) => {
 
 router.post("/chats", async (req, res, next) => {
   try {
-    const username = requireUsername(req, res);
+    const username = await requireUsername(req, res);
     if (!username) return;
     const input = CreateChatBody.parse(req.body);
     res.status(201).json(CreateChatResponse.parse(await createChat(username, input)));
@@ -80,7 +80,7 @@ router.post("/chats", async (req, res, next) => {
 
 router.get("/chats/:chatId", async (req, res, next) => {
   try {
-    const username = requireUsername(req, res);
+    const username = await requireUsername(req, res);
     if (!username) return;
     res.json(GetChatResponse.parse(await getChat(username, req.params.chatId)));
   } catch (error) {
@@ -90,7 +90,7 @@ router.get("/chats/:chatId", async (req, res, next) => {
 
 router.patch("/chats/:chatId", async (req, res, next) => {
   try {
-    const username = requireUsername(req, res);
+    const username = await requireUsername(req, res);
     if (!username) return;
     const input = RenameChatBody.parse(req.body);
     res.json(
@@ -105,7 +105,7 @@ router.patch("/chats/:chatId", async (req, res, next) => {
 
 router.post("/chats/:chatId/messages", async (req, res, next) => {
   try {
-    const username = requireUsername(req, res);
+    const username = await requireUsername(req, res);
     if (!username) return;
     const input = SendChatMessageBody.parse(req.body);
     res.json(

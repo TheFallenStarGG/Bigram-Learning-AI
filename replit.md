@@ -29,6 +29,8 @@ Bigram AI is a transparent, from-scratch conversational model that learns word-t
 - `artifacts/api-server/src/lib/brain-service.ts` — tokenizer, bigram learner, generator, snapshots, and scheduler
 - `artifacts/api-server/src/lib/auth-service.ts` — GitHub-backed accounts, password hashing, sessions, and per-account chat files
 - `artifacts/api-server/src/routes/auth.ts` — local account session, signup, login, and logout routes
+- `artifacts/api-server/src/routes/admin.ts` — administrator-only account moderation and AI conversation review routes
+- `artifacts/bigram-ai/src/pages/admin.tsx` — responsive administrator control room
 - `artifacts/api-server/src/routes/brain.ts` — model, chat, snapshot, and GitHub settings routes
 - `lib/db/src/schema/brain.ts` — persistent model state, messages, snapshots, and private backup state
 - `lib/api-spec/openapi.yaml` — source of truth for the generated API client and Zod contracts
@@ -40,11 +42,14 @@ Bigram AI is a transparent, from-scratch conversational model that learns word-t
 - Account records and user-facing chats are stored only in the private GitHub repository. Account files contain salted password hashes, and each user chat lives under `snapshots/<account-name>/`.
 - A five-minute server-side timer creates a snapshot while the API process is active. Before every chat, the API loads the latest private GitHub model snapshot so the shared vocabulary and transitions stay current, then writes the signed-in user's chat separately.
 - Local username/password accounts are independent of Clerk, Replit Auth, Replit OAuth, and GitHub OAuth login.
+- Administrator access is stored on account records and enforced on the backend. Admins can review only direct AI chats and group rooms that include Little Brain; user-only rooms are never returned.
+- Banning an account invalidates its server-checked sessions, blocks future login, deletes its direct AI history, and removes its messages from shared rooms. The repository-owner account is the initial administrator.
 - The frontend uses generated API hooks so the chat, metrics, snapshot history, and backup status all consume the same contract.
 
 ## Product
 
 Users first acknowledge the model disclaimer, then create or sign into a local account before teaching the shared model in a private chat. They can see vocabulary/bigram/message counts grow, inspect timestamped snapshots, and save a snapshot immediately. The GitHub destination is fixed and is not editable from the UI.
+Administrators also have an `/admin` control room for reviewing AI-involving conversations, account status, bans, and username-based administrator promotion.
 
 ## User preferences
 

@@ -13,6 +13,7 @@ export interface AuthSession {
   authenticated: boolean;
   /** @nullable */
   username: string | null;
+  isAdmin: boolean;
   message?: string;
 }
 
@@ -187,5 +188,51 @@ export interface RenameChatInput {
      * @maxLength 80
      */
   title: string;
+}
+
+export interface AdminAccount {
+  username: string;
+  createdAt: string;
+  isAdmin: boolean;
+  isBanned: boolean;
+}
+
+export interface AdminChatMessage {
+  id: string;
+  sender: ChatParticipant;
+  content: string;
+  createdAt: string;
+}
+
+export type AdminChatSummaryType = typeof AdminChatSummaryType[keyof typeof AdminChatSummaryType];
+
+
+export const AdminChatSummaryType = {
+  direct: 'direct',
+  group: 'group',
+} as const;
+
+export interface AdminChatSummary {
+  id: string;
+  type: AdminChatSummaryType;
+  title: string;
+  participants: ChatParticipant[];
+  includeBrain: boolean;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage: AdminChatMessage | null;
+}
+
+export type AdminChatDetail = AdminChatSummary & {
+  messages: AdminChatMessage[];
+};
+
+export interface AdminGrantAdminInput {
+  /**
+     * @minLength 3
+     * @maxLength 32
+     * @pattern ^[A-Za-z0-9_-]+$
+     */
+  username: string;
 }
 

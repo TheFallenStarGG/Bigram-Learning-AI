@@ -136,6 +136,26 @@ export async function writePrivateFile(input: {
   );
 }
 
+export async function deletePrivateFile(input: {
+  relativePath: string;
+  message: string;
+}) {
+  const existing = await readPrivateFile(input.relativePath);
+  if (!existing?.sha) return;
+  await githubRequest(
+    contentsPath(input.relativePath),
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: input.message,
+        sha: existing.sha,
+        branch: SNAPSHOT_REPOSITORY.branch,
+      }),
+    },
+  );
+}
+
 export async function pushSnapshotToGithub(input: {
   filename: string;
   content: string;

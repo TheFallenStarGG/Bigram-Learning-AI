@@ -7,6 +7,12 @@
  */
 
 export * from './accountInput';
+export * from './adminAccount';
+export * from './adminChatDetail';
+export * from './adminChatMessage';
+export * from './adminChatSummary';
+export * from './adminChatSummaryType';
+export * from './adminGrantAdminInput';
 export * from './authSession';
 export * from './brainOverview';
 export * from './chatDetail';
