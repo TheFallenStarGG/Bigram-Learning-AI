@@ -128,7 +128,7 @@ function Sidebar() {
       <div className="flex items-center gap-3 px-2">
         <BrandMark />
         <div>
-          <div className="display text-[15px] font-bold tracking-[-.03em]">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</div>
+          <div className="display text-[15px] font-bold tracking-[-.03em]">Little Brain AI</div>
           <div className="mono mt-0.5 text-[9px] uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.5)]">a tiny language engine</div>
         </div>
       </div>
@@ -142,7 +142,7 @@ function Sidebar() {
         </button>
         <div className="mt-1 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-[hsl(var(--sidebar-foreground)/.56)]">
           <Network className="h-4 w-4" />
-          Bigram map
+           Little Brain AI map
           <span className="mono ml-auto text-[9px]">soon</span>
         </div>
       </div>
@@ -184,7 +184,7 @@ function MobileHeader({ onMenu }: { onMenu: () => void }) {
       <div className="flex items-center gap-2.5">
         <button data-testid="button-open-mobile-menu" onClick={onMenu} className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))]"><Menu className="h-5 w-5" /></button>
         <BrandMark />
-        <span className="display text-sm font-bold">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</span>
+         <span className="display text-sm font-bold">Little Brain AI</span>
       </div>
     </header>
   );
@@ -350,18 +350,18 @@ function DisclaimerModal({ onDismiss }: { onDismiss: () => void }) {
           <Info className="h-5 w-5" />
         </div>
         <div className="mono mt-6 text-[10px] uppercase tracking-[.16em] text-[hsl(var(--primary))]">before you begin</div>
-        <h2 id="disclaimer-title" className="display mt-2 text-2xl font-semibold tracking-[-.045em]">A note about Bigram</h2>
+        <h2 id="disclaimer-title" className="display mt-2 text-2xl font-semibold tracking-[-.045em]">A note about Little Brain AI</h2>
         <p className="mt-4 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
-          Bigram is an AI that learns exclusively from what people teach it. It has no training data beyond the words and phrases shared with it here.
+          Little Brain AI is an AI that learns exclusively from what people teach it. It has no training data beyond the words and phrases shared with it here.
         </p>
         <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
-          Repetition is expected. Bigram learns in an intentionally simple, early-stage way—much like a toddler: by copying language, forming connections between words, and gradually discovering how to generate sentences of its own.
+          Repetition is expected. Little Brain AI learns in an intentionally simple, early-stage way—much like a toddler: by copying language, forming connections between words, and gradually discovering how to generate sentences of its own.
         </p>
         <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
           Its responses may be limited or repetitive while it learns. That is a normal part of watching this small model develop.
         </p>
         <p className="mt-3 text-sm leading-7 text-[hsl(var(--muted-foreground))]">
-          Bigram is entirely open source. You can explore its code from the Sources tab, while conversations are kept private and separate from the public source project.
+          Little Brain AI is entirely open source. You can explore its code from the Sources tab, while conversations are kept private and separate from the public source project.
         </p>
         <button
           type="button"
@@ -369,7 +369,7 @@ function DisclaimerModal({ onDismiss }: { onDismiss: () => void }) {
           onClick={dismiss}
           className="mt-7 w-full rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-sm font-bold text-[hsl(var(--primary-foreground))] transition hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-[hsl(var(--primary)/.18)]"
         >
-          Continue to Bigram
+           Continue to Little Brain AI
         </button>
       </div>
     </div>
@@ -384,7 +384,7 @@ function SessionLoading() {
         <div className="flex items-center gap-3">
           <BrandMark />
           <div>
-            <div className="display text-[15px] font-bold tracking-[-.03em]">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</div>
+            <div className="display text-[15px] font-bold tracking-[-.03em]">Little Brain AI</div>
             <div className="mono mt-0.5 text-[9px] uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">checking private memory</div>
           </div>
         </div>
@@ -458,7 +458,7 @@ function AccountGate({ initialMessage, onAuthenticated }: { initialMessage?: str
           <div className="relative z-10 flex items-center gap-3">
             <BrandMark />
             <div>
-              <div className="display text-[15px] font-bold tracking-[-.03em]">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</div>
+              <div className="display text-[15px] font-bold tracking-[-.03em]">Little Brain AI</div>
               <div className="mono mt-0.5 text-[9px] uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.5)]">a tiny language engine</div>
             </div>
           </div>
@@ -477,7 +477,7 @@ function AccountGate({ initialMessage, onAuthenticated }: { initialMessage?: str
 
         <main className="flex min-h-[100dvh] items-center justify-center px-5 py-8 sm:px-10">
           <div className="w-full max-w-[390px]">
-            <div className="mb-9 flex items-center gap-3 lg:hidden"><BrandMark /><div><div className="display text-[15px] font-bold">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</div><div className="mono text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">a tiny language engine</div></div></div>
+             <div className="mb-9 flex items-center gap-3 lg:hidden"><BrandMark /><div><div className="display text-[15px] font-bold">Little Brain AI</div><div className="mono text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">a tiny language engine</div></div></div>
             <div className="reveal">
               <div className="mono text-[10px] uppercase tracking-[.18em] text-[hsl(var(--primary))]">{mode === 'create' ? 'new account' : 'welcome back'}</div>
               <h2 data-testid="text-account-title" className="display mt-3 text-[clamp(2.2rem,5vw,3.4rem)] font-semibold leading-[.96] tracking-[-.075em]">{mode === 'create' ? 'Start with a blank brain.' : 'Return to your brain.'}</h2>
@@ -496,7 +496,7 @@ function AccountGate({ initialMessage, onAuthenticated }: { initialMessage?: str
               {(formError || initialMessage) && <div data-testid="status-auth-error" className="flex items-start gap-2 rounded-xl border border-[hsl(var(--destructive)/.22)] bg-[hsl(var(--destructive)/.06)] px-3.5 py-3 text-xs leading-5 text-[hsl(var(--destructive))]"><TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />{formError || initialMessage}</div>}
               <button data-testid="button-submit-auth" type="submit" disabled={isPending} className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-3.5 text-sm font-bold text-[hsl(var(--primary-foreground))] transition hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-[hsl(var(--primary)/.18)] disabled:cursor-not-allowed disabled:opacity-55">{isPending ? 'Opening private memory…' : mode === 'create' ? 'Create my account' : 'Sign in'}{!isPending && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}</button>
             </form>
-            <div className="mt-7 flex items-start gap-2.5 border-t border-[hsl(var(--border))] pt-5 text-[10px] leading-5 text-[hsl(var(--muted-foreground))]"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[hsl(var(--primary))]" /><span>Your conversation is restored from a private account space. Bigram's shared model is separate from your memory.</span></div>
+             <div className="mt-7 flex items-start gap-2.5 border-t border-[hsl(var(--border))] pt-5 text-[10px] leading-5 text-[hsl(var(--muted-foreground))]"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[hsl(var(--primary))]" /><span>Your conversation is restored from a private account space. Little Brain AI's shared model is separate from your memory.</span></div>
           </div>
         </main>
       </div>
@@ -512,7 +512,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
-  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-12 flex items-center gap-3 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]"><UserRound className="h-3.5 w-3.5" /></div><div className="min-w-0 flex-1"><div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div><div data-testid="text-mobile-username" className="truncate text-[11px] font-semibold">{username}</div></div><button data-testid="button-mobile-sign-out" type="button" onClick={signOut} disabled={signingOut} className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.58)]"><LogOut className="h-3.5 w-3.5" /></button></div><button data-testid="button-mobile-nav-workspace" onClick={() => goTo('/')} className={`mt-7 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button data-testid="button-mobile-nav-sources" onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
+  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">Little Brain AI</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-12 flex items-center gap-3 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]"><UserRound className="h-3.5 w-3.5" /></div><div className="min-w-0 flex-1"><div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div><div data-testid="text-mobile-username" className="truncate text-[11px] font-semibold">{username}</div></div><button data-testid="button-mobile-sign-out" type="button" onClick={signOut} disabled={signingOut} className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.58)]"><LogOut className="h-3.5 w-3.5" /></button></div><button data-testid="button-mobile-nav-workspace" onClick={() => goTo('/')} className={`mt-7 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button data-testid="button-mobile-nav-sources" onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
 }
 
 function Home() {
@@ -530,7 +530,7 @@ function Home() {
           <MobileHeader onMenu={() => setMobileMenuOpen(true)} />
           <main className="mx-auto max-w-[1500px] px-4 py-5 sm:px-7 sm:py-8 xl:px-10">
             <header className="reveal mb-7 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-              <div><div className="mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[.17em] text-[hsl(var(--primary))]"><Activity className="h-3.5 w-3.5" />model observability workspace</div><h1 data-testid="text-page-title" className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Watch a small brain<br /><span className="text-[hsl(var(--primary))]">become itself.</span></h1><p className="mt-4 max-w-[530px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">Bigram is a transparent language model built from scratch. Teach it in public, see what it remembers, and keep every state you care about.</p></div>
+               <div><div className="mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[.17em] text-[hsl(var(--primary))]"><Activity className="h-3.5 w-3.5" />model observability workspace</div><h1 data-testid="text-page-title" className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Watch a small brain<br /><span className="text-[hsl(var(--primary))]">become itself.</span></h1><p className="mt-4 max-w-[530px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">Little Brain AI is a transparent language model built from scratch. Teach it in public, see what it remembers, and keep every state you care about.</p></div>
               <div className="flex items-center gap-3 rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card)/.72)] px-4 py-3 shadow-[var(--shadow-sm)]"><div className="living-dot flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--primary)/.12)] text-[hsl(var(--primary))]"><BrainCircuit className="h-4 w-4" /></div><div><div className="mono text-[9px] uppercase tracking-[.13em] text-[hsl(var(--muted-foreground))]">learning since</div><div data-testid="text-learning-started" className="mt-0.5 text-xs font-semibold">{startedLabel}</div></div></div>
             </header>
             <div className="reveal grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]" style={{ animationDelay: '.08s' }}>
@@ -559,11 +559,11 @@ function SourcesPage() {
             <header className="reveal mb-8">
               <div className="mono mb-2 flex items-center gap-2 text-[10px] uppercase tracking-[.17em] text-[hsl(var(--primary))]"><BookOpen className="h-3.5 w-3.5" />sources</div>
               <h1 className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Built in the open.<br /><span className="text-[hsl(var(--primary))]">Nothing hidden.</span></h1>
-              <p className="mt-4 max-w-[560px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">The entire Bigram AI project is open source. Read the code, follow how the model learns, and build on the same transparent foundation.</p>
+               <p className="mt-4 max-w-[560px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">The entire Little Brain AI project is open source. Read the code, follow how the model learns, and build on the same transparent foundation.</p>
             </header>
             <section className="reveal max-w-2xl rounded-[26px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-[var(--shadow-sm)] sm:p-8">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[hsl(var(--foreground))] text-[hsl(var(--background))]"><Github className="h-6 w-6" /></div>
-              <h2 className="display mt-6 text-2xl font-semibold tracking-[-.04em]">Bigram AI source code</h2>
+               <h2 className="display mt-6 text-2xl font-semibold tracking-[-.04em]">Little Brain AI source code</h2>
               <p className="mt-3 text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">The source repository contains the app, the from-scratch word-level model, and the API that powers this workspace.</p>
               <a data-testid="link-source-repository" href={SOURCE_REPOSITORY_URL} target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-3 text-xs font-bold text-[hsl(var(--primary-foreground))] transition hover:brightness-110">View the source repository <ExternalLink className="h-3.5 w-3.5" /></a>
               <div className="mt-8 border-t border-[hsl(var(--border))] pt-5 text-xs leading-relaxed text-[hsl(var(--muted-foreground))]"><Sparkles className="mr-1.5 inline h-3.5 w-3.5 align-[-2px] text-[hsl(var(--accent))]" />Private model snapshots and conversation memory are kept separately from this public source project.</div>
