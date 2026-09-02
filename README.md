@@ -48,9 +48,11 @@ frontend does not provide a repository picker or GitHub connection button.
 │   │   ├── src/
 │   │   │   ├── lib/
 │   │   │   │   ├── brain-service.ts
+│   │   │   │   ├── auth-service.ts
 │   │   │   │   ├── github.ts
 │   │   │   │   └── logger.ts
 │   │   │   └── routes/
+│   │   │       ├── auth.ts
 │   │   │       ├── brain.ts
 │   │   │       ├── health.ts
 │   │   │       └── index.ts
@@ -87,8 +89,10 @@ The Replit workspace normally supplies these:
 
 1. Node.js 20
 2. pnpm
-3. A provisioned PostgreSQL database
-4. A GitHub integration authorized for this Repl/environment
+3. A provisioned PostgreSQL database for the live shared model cache
+4. A GitHub integration authorized for this Repl/environment, or a
+   `GITHUB_TOKEN` with access to the fixed private repository when running
+   outside Replit
 
 The API server will fail intentionally if `DATABASE_URL` is missing. Do not
 put database credentials, GitHub tokens, or other secrets in this README or in
@@ -254,14 +258,11 @@ There is one application-wide row with `id = 1`.
 - `learning_started_at`: first model initialization timestamp
 - `last_snapshot_at`: timestamp of the latest local/remote snapshot
 
-#### `chat_messages`
+#### `chat_messages` (legacy)
 
-Stores the visible conversation:
-
-- `id`
-- `role`: `user` or `assistant`
-- `content`
-- `created_at`
+This table is retained for compatibility with the original schema but is no
+longer used for user-facing conversation history. New account conversations
+are stored in the private GitHub repository.
 
 #### `model_snapshots`
 
@@ -389,6 +390,30 @@ GET /api/healthz
 
 Returns a small health object with `status`.
 
+### Local accounts
+
+The application account flow is intentionally separate from Replit Auth,
+Clerk, GitHub OAuth, and other hosted identity providers. The server creates
+and verifies local username/password accounts using the fixed private GitHub
+repository:
+
+```http
+GET /api/auth/session
+POST /api/auth/signup
+POST /api/auth/login
+POST /api/auth/logout
+```
+
+Account files are stored under:
+
+```text
+accounts/<normalized-username>.json
+```
+
+Only a salted password hash is stored. Successful signup and login set an
+HTTP-only signed session cookie. The session cookie contains no password and
+does not require an account row in PostgreSQL.
+
 ### Model overview
 
 ```http
@@ -415,7 +440,8 @@ does not perform a live GitHub probe on every overview request.
 GET /api/brain/messages
 ```
 
-Returns all messages in chronological order.
+Returns the signed-in account's messages in chronological order. The request
+must include the account session cookie.
 
 ### Teach and respond
 
@@ -434,9 +460,11 @@ Content-Type: application/json
 - `assistantMessage`
 - updated `overview`
 
-Before learning from the message, the server loads the latest snapshot from the
-private GitHub repository when one exists. This is the source-of-truth refresh
-for vocabulary, transitions, message count, and conversation history.
+Before learning from the message, the server loads the latest model snapshot
+from the private GitHub repository when one exists. The shared model's
+vocabulary, transitions, and message count are refreshed from that snapshot;
+the signed-in user's chat is written separately under that user's account
+folder.
 
 ### Snapshot history
 
@@ -541,13 +569,20 @@ Each snapshot includes:
 - `model.transitions`
 - `model.messageCount`
 - `model.learningStartedAt`
-- `messages`
+- `messages` (empty in current model snapshots; account chat is stored
+  separately)
 - backup metadata under `github`
 
 The remote copy is written to:
 
 ```text
 snapshots/<snapshot-filename>.json
+```
+
+Each account's chat history is written to:
+
+```text
+snapshots/<normalized-username>/chat-history.json
 ```
 
 The API uses the Replit GitHub connector SDK:
@@ -573,7 +608,8 @@ Before every `POST /api/brain/chat`:
 3. Select the lexicographically newest filename.
 4. Read and base64-decode its GitHub Contents API response.
 5. Validate the snapshot shape and dates.
-6. Replace the local `brain_state` model and `chat_messages` rows.
+6. Replace the local shared `brain_state` model. Account chat files are not
+   mixed into the shared model snapshot.
 7. Learn the new message and generate a response from that refreshed state.
 
 If the repository has no snapshots yet, the local state is used. If a remote
@@ -595,6 +631,8 @@ routes compatible with the Wouter router and the artifact's `/` preview path.
 
 The frontend currently provides:
 
+- Disclaimer-first launch flow followed by local account creation/sign-in
+- Signed-in username display and sign-out
 - Live chat with Enter-to-submit and Shift+Enter for a newline
 - Vocabulary, bigram, and message metrics
 - Snapshot history
@@ -652,8 +690,10 @@ Production artifact behavior is defined by the artifact manifests:
 - The API health path is `/api/healthz`.
 
 Before publishing, verify that the deployed environment has access to the
-required PostgreSQL database and the authorized GitHub connector. Never put
-the GitHub credential or database connection string in source control.
+required PostgreSQL database and the fixed private GitHub repository. Replit
+uses the attached GitHub connector; Render or another non-Replit host should
+provide `GITHUB_TOKEN` and `SESSION_SECRET` through its secret manager. Never
+put either credential or the database connection string in source control.
 
 ## Troubleshooting
 
@@ -713,9 +753,13 @@ Restart the managed workflow and check:
 
 - Keep the existing pnpm workspace structure; do not migrate it to another
   framework or package layout without an explicit product decision.
-- Do not replace the PostgreSQL database with another database.
+- Do not replace the PostgreSQL-backed shared model cache without an explicit
+  architecture decision. Account records and account chats belong in GitHub,
+  not PostgreSQL.
 - Do not expose or commit secrets.
-- Do not use raw GitHub tokens when the Replit GitHub integration is available.
+- Do not put GitHub tokens in source code or chat. Use the Replit GitHub
+  connector in Replit and `GITHUB_TOKEN` through the host's secret manager
+  outside Replit.
 - Do not link the private snapshot repository from the public UI.
 - Do not hand-edit generated API clients or Zod files.
 - Do not edit artifact metadata directly.

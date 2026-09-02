@@ -9,6 +9,27 @@ export interface HealthStatus {
   status: string;
 }
 
+export interface AuthSession {
+  authenticated: boolean;
+  /** @nullable */
+  username: string | null;
+  message?: string;
+}
+
+export interface AccountInput {
+  /**
+     * @minLength 3
+     * @maxLength 32
+     * @pattern ^[A-Za-z0-9_-]+$
+     */
+  username: string;
+  /**
+     * @minLength 8
+     * @maxLength 128
+     */
+  password: string;
+}
+
 export type ChatMessageRole = typeof ChatMessageRole[keyof typeof ChatMessageRole];
 
 

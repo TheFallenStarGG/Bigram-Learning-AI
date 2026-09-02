@@ -22,6 +22,7 @@ type GithubContent = {
   type: string;
   download_url?: string | null;
   content?: string;
+  sha?: string;
 };
 
 async function githubRequest<T>(
@@ -29,13 +30,22 @@ async function githubRequest<T>(
   init?: GithubRequestInit,
   options?: { allowNotFound?: boolean },
 ) {
-  const response = await connectors.proxy("github", requestPath, {
-    ...init,
-    headers: {
-      Accept: "application/vnd.github+json",
-      ...(init?.headers ?? {}),
-    },
-  });
+  const headers = {
+    Accept: "application/vnd.github+json",
+    ...(init?.headers ?? {}),
+  };
+  const response = process.env.GITHUB_TOKEN
+    ? await fetch(`https://api.github.com${requestPath}`, {
+        ...init,
+        headers: {
+          ...headers,
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+        },
+      })
+    : await connectors.proxy("github", requestPath, {
+        ...init,
+        headers,
+      });
 
   const responseText = await response.text();
   let payload: unknown = null;
@@ -69,31 +79,62 @@ function repositoryPath(owner: string, repository: string, suffix: string) {
   return `/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repository)}${suffix}`;
 }
 
-export async function pushSnapshotToGithub(input: {
-  filename: string;
-  content: string;
-}) {
-  const filePath = `snapshots/${input.filename}`
+function contentsPath(relativePath: string) {
+  const encodedPath = relativePath
     .split("/")
+    .filter(Boolean)
     .map((segment) => encodeURIComponent(segment))
     .join("/");
+  return repositoryPath(
+    SNAPSHOT_REPOSITORY.owner,
+    SNAPSHOT_REPOSITORY.repository,
+    `/contents/${encodedPath}`,
+  );
+}
 
+export async function readPrivateFile(relativePath: string) {
+  const file = await githubRequest<GithubContent>(
+    `${contentsPath(relativePath)}?ref=${encodeURIComponent(SNAPSHOT_REPOSITORY.branch)}`,
+    undefined,
+    { allowNotFound: true },
+  );
+  if (!file?.content) return null;
+  return {
+    content: Buffer.from(file.content.replace(/\s/g, ""), "base64").toString("utf8"),
+    sha: file.sha ?? null,
+  };
+}
+
+export async function writePrivateFile(input: {
+  relativePath: string;
+  content: string;
+  message: string;
+}) {
+  const existing = await readPrivateFile(input.relativePath);
   await githubRequest(
-    repositoryPath(
-      SNAPSHOT_REPOSITORY.owner,
-      SNAPSHOT_REPOSITORY.repository,
-      `/contents/${filePath}`,
-    ),
+    contentsPath(input.relativePath),
     {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        message: `Save model snapshot ${input.filename}`,
+        message: input.message,
         content: Buffer.from(input.content, "utf8").toString("base64"),
         branch: SNAPSHOT_REPOSITORY.branch,
+        ...(existing?.sha ? { sha: existing.sha } : {}),
       }),
     },
   );
+}
+
+export async function pushSnapshotToGithub(input: {
+  filename: string;
+  content: string;
+}) {
+  await writePrivateFile({
+    relativePath: `snapshots/${input.filename}`,
+    content: input.content,
+    message: `Save model snapshot ${input.filename}`,
+  });
 }
 
 export async function getLatestSnapshotFromGithub() {

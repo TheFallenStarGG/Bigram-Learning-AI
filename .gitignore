@@ -50,3 +50,4 @@ Thumbs.db
 
 # Runtime model snapshots are backup artifacts, not source files
 /data/model-snapshots/
+/artifacts/api-server/data/model-snapshots/

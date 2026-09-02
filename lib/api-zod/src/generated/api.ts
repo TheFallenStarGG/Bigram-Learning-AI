@@ -18,6 +18,76 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Get the current local account session
+ */
+export const GetAuthSessionResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "username": zod.string().nullable(),
+  "message": zod.string().optional()
+})
+
+
+/**
+ * @summary Create a local username and password account
+ */
+export const signupBodyUsernameMin = 3;
+export const signupBodyUsernameMax = 32;
+
+
+export const signupBodyUsernameRegExp = new RegExp('^[A-Za-z0-9_-]+$');
+export const signupBodyPasswordMin = 8;
+export const signupBodyPasswordMax = 128;
+
+
+
+export const SignupBody = zod.object({
+  "username": zod.string().min(signupBodyUsernameMin).max(signupBodyUsernameMax).regex(signupBodyUsernameRegExp),
+  "password": zod.string().min(signupBodyPasswordMin).max(signupBodyPasswordMax)
+})
+
+export const SignupResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "username": zod.string().nullable(),
+  "message": zod.string().optional()
+})
+
+
+/**
+ * @summary Sign in to a local account
+ */
+export const loginBodyUsernameMin = 3;
+export const loginBodyUsernameMax = 32;
+
+
+export const loginBodyUsernameRegExp = new RegExp('^[A-Za-z0-9_-]+$');
+export const loginBodyPasswordMin = 8;
+export const loginBodyPasswordMax = 128;
+
+
+
+export const LoginBody = zod.object({
+  "username": zod.string().min(loginBodyUsernameMin).max(loginBodyUsernameMax).regex(loginBodyUsernameRegExp),
+  "password": zod.string().min(loginBodyPasswordMin).max(loginBodyPasswordMax)
+})
+
+export const LoginResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "username": zod.string().nullable(),
+  "message": zod.string().optional()
+})
+
+
+/**
+ * @summary Sign out of the current local account
+ */
+export const LogoutResponse = zod.object({
+  "authenticated": zod.boolean(),
+  "username": zod.string().nullable(),
+  "message": zod.string().optional()
+})
+
+
+/**
  * @summary Get the current model overview
  */
 export const getBrainOverviewResponseVocabularyMin = 0;

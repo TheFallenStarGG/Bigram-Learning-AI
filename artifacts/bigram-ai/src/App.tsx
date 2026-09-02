@@ -1,9 +1,10 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import {
   Activity,
   Archive,
   ArrowUp,
+  ArrowRight,
   BookOpen,
   BrainCircuit,
   ChevronRight,
@@ -14,26 +15,35 @@ import {
   Github,
   History,
   Info,
+  KeyRound,
+  LogOut,
   Menu,
   MessageSquare,
   Network,
   Save,
+  ShieldCheck,
   Sparkles,
   TriangleAlert,
+  UserRound,
   X,
   Zap,
 } from 'lucide-react';
 import {
+  getGetAuthSessionQueryKey,
   getGetBrainGithubQueryKey,
   getGetBrainMessagesQueryKey,
   getGetBrainOverviewQueryKey,
   getGetBrainSnapshotsQueryKey,
   useCreateBrainSnapshot,
+  useGetAuthSession,
   useGetBrainGithub,
   useGetBrainMessages,
   useGetBrainOverview,
   useGetBrainSnapshots,
+  useLogin,
+  useLogout,
   useSendBrainMessage,
+  useSignup,
 } from '@workspace/api-client-react';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -44,6 +54,37 @@ import NotFound from '@/pages/not-found';
 const queryClient = new QueryClient();
 const SOURCE_REPOSITORY_URL = 'https://github.com/TheFallenStarGG/Bigram-Learning-AI';
 const DISCLAIMER_STORAGE_KEY = 'bigram-ai-disclaimer-seen';
+
+type AuthContextValue = {
+  username: string;
+  signOut: () => void;
+  signingOut: boolean;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+function useAuth() {
+  const auth = useContext(AuthContext);
+  if (!auth) throw new Error('Auth context is unavailable');
+  return auth;
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message;
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  return fallback;
+}
+
+function readDisclaimerAcknowledged() {
+  if (typeof window === 'undefined') return false;
+  try {
+    return window.localStorage.getItem(DISCLAIMER_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
 
 function formatCount(value: number | undefined) {
   return new Intl.NumberFormat('en-US').format(value ?? 0);
@@ -79,6 +120,7 @@ function BrandMark() {
 
 function Sidebar() {
   const [location, navigate] = useLocation();
+  const { username, signOut, signingOut } = useAuth();
   const sourcesActive = location === '/sources';
 
   return (
@@ -93,7 +135,7 @@ function Sidebar() {
 
       <div className="mt-12 px-2">
         <div className="mono mb-3 text-[9px] uppercase tracking-[.18em] text-[hsl(var(--sidebar-foreground)/.42)]">Workspace</div>
-        <button onClick={() => navigate('/')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${!sourcesActive ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}>
+        <button data-testid="button-nav-workspace" onClick={() => navigate('/')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${!sourcesActive ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}>
           <MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />
           Live conversation
           {!sourcesActive && <CircleDot className="ml-auto h-2.5 w-2.5 fill-[hsl(var(--sidebar-primary))] text-[hsl(var(--sidebar-primary))]" />}
@@ -106,6 +148,18 @@ function Sidebar() {
       </div>
 
       <div className="mt-auto">
+        <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]">
+            <UserRound className="h-3.5 w-3.5" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div>
+            <div data-testid="text-username" className="mt-0.5 truncate text-[11px] font-semibold">{username}</div>
+          </div>
+          <button data-testid="button-sign-out" type="button" onClick={signOut} disabled={signingOut} aria-label="Sign out" className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.52)] transition hover:bg-[hsl(var(--sidebar-foreground)/.08)] hover:text-[hsl(var(--sidebar-foreground))] disabled:opacity-50">
+            <LogOut className="h-3.5 w-3.5" />
+          </button>
+        </div>
         <div className="mb-4 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.55)] p-3.5">
           <div className="flex items-center gap-2 text-[11px] font-semibold">
             <div className="living-dot h-2 w-2 rounded-full bg-[hsl(var(--sidebar-primary))]" />
@@ -113,7 +167,7 @@ function Sidebar() {
           </div>
           <p className="mt-2 text-[11px] leading-relaxed text-[hsl(var(--sidebar-foreground)/.54)]">Every message changes the brain. Nothing is hidden behind a polished answer.</p>
         </div>
-        <button onClick={() => navigate('/sources')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))] ${sourcesActive ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-[hsl(var(--sidebar-foreground))]' : 'text-[hsl(var(--sidebar-foreground)/.62)]'}`}>
+        <button data-testid="button-nav-sources" onClick={() => navigate('/sources')} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm transition hover:bg-[hsl(var(--sidebar-accent))] hover:text-[hsl(var(--sidebar-foreground))] ${sourcesActive ? 'bg-[hsl(var(--sidebar-accent))] font-semibold text-[hsl(var(--sidebar-foreground))]' : 'text-[hsl(var(--sidebar-foreground)/.62)]'}`}>
           <BookOpen className="h-4 w-4" />
           Sources
           <ChevronRight className="ml-auto h-4 w-4 opacity-50" />
@@ -267,14 +321,9 @@ function GithubPanel() {
   );
 }
 
-function DisclaimerModal() {
+function DisclaimerModal({ onDismiss }: { onDismiss: () => void }) {
   const [isOpen, setIsOpen] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    try {
-      return window.localStorage.getItem(DISCLAIMER_STORAGE_KEY) !== 'true';
-    } catch {
-      return true;
-    }
+    return !readDisclaimerAcknowledged();
   });
 
   const dismiss = () => {
@@ -284,6 +333,7 @@ function DisclaimerModal() {
       // The notice can still be dismissed if browser storage is unavailable.
     }
     setIsOpen(false);
+    onDismiss();
   };
 
   if (!isOpen) return null;
@@ -326,14 +376,143 @@ function DisclaimerModal() {
   );
 }
 
+function SessionLoading() {
+  return (
+    <div className="app-shell relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-5">
+      <div className="noise" />
+      <div className="relative w-full max-w-md rounded-[28px] border border-[hsl(var(--border))] bg-[hsl(var(--card)/.82)] p-7 shadow-[var(--shadow-md)] backdrop-blur">
+        <div className="flex items-center gap-3">
+          <BrandMark />
+          <div>
+            <div className="display text-[15px] font-bold tracking-[-.03em]">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</div>
+            <div className="mono mt-0.5 text-[9px] uppercase tracking-[.16em] text-[hsl(var(--muted-foreground))]">checking private memory</div>
+          </div>
+        </div>
+        <div className="mt-9 space-y-3" aria-label="Loading account">
+          <div className="h-2 w-2/5 animate-pulse rounded-full bg-[hsl(var(--muted))]" />
+          <div className="h-11 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
+          <div className="h-11 animate-pulse rounded-xl bg-[hsl(var(--muted))]" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AccountGate({ initialMessage, onAuthenticated }: { initialMessage?: string; onAuthenticated: (session: { authenticated: boolean; username: string | null }) => void }) {
+  const queryClient = useQueryClient();
+  const [mode, setMode] = useState<'signin' | 'create'>('signin');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState('');
+  const login = useLogin();
+  const signup = useSignup();
+  const isPending = login.isPending || signup.isPending;
+
+  const finishAuth = (session: { authenticated: boolean; username: string | null }) => {
+    queryClient.setQueryData(getGetAuthSessionQueryKey(), session);
+    queryClient.invalidateQueries({ queryKey: getGetAuthSessionQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetBrainMessagesQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetBrainOverviewQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetBrainSnapshotsQueryKey() });
+    queryClient.invalidateQueries({ queryKey: getGetBrainGithubQueryKey() });
+    onAuthenticated(session);
+  };
+
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    setFormError('');
+    const cleanUsername = username.trim();
+    if (!/^[A-Za-z0-9_-]{3,32}$/.test(cleanUsername)) {
+      setFormError('Use 3–32 letters, numbers, underscores, or hyphens.');
+      return;
+    }
+    if (password.length < 8 || password.length > 128) {
+      setFormError('Your password must be between 8 and 128 characters.');
+      return;
+    }
+    if (mode === 'create' && password !== confirmPassword) {
+      setFormError('The passwords do not match.');
+      return;
+    }
+    const data = { username: cleanUsername, password };
+    const options = {
+      onSuccess: (session: { authenticated: boolean; username: string | null; message?: string }) => {
+        if (!session.authenticated || !session.username) {
+          setFormError(session.message || 'The account could not be opened.');
+          return;
+        }
+        finishAuth(session);
+      },
+      onError: (error: unknown) => setFormError(getErrorMessage(error, mode === 'create' ? 'That account could not be created.' : 'Those details did not open an account.')),
+    };
+    if (mode === 'create') signup.mutate({ data }, options);
+    else login.mutate({ data }, options);
+  };
+
+  return (
+    <div className="app-shell relative min-h-[100dvh] overflow-hidden">
+      <div className="noise" />
+      <div className="mx-auto grid min-h-[100dvh] max-w-[1440px] lg:grid-cols-[minmax(0,1fr)_minmax(420px,520px)]">
+        <section className="account-grid relative hidden overflow-hidden bg-[hsl(var(--sidebar))] px-10 py-10 text-[hsl(var(--sidebar-foreground))] lg:flex lg:flex-col xl:px-16">
+          <div className="relative z-10 flex items-center gap-3">
+            <BrandMark />
+            <div>
+              <div className="display text-[15px] font-bold tracking-[-.03em]">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</div>
+              <div className="mono mt-0.5 text-[9px] uppercase tracking-[.16em] text-[hsl(var(--sidebar-foreground)/.5)]">a tiny language engine</div>
+            </div>
+          </div>
+          <div className="relative z-10 mt-auto max-w-[610px] pb-6 pt-20">
+            <div className="mono mb-5 flex items-center gap-2 text-[10px] uppercase tracking-[.18em] text-[hsl(var(--sidebar-primary))]"><ShieldCheck className="h-3.5 w-3.5" />your memory, kept apart</div>
+            <h1 className="display max-w-[640px] text-[clamp(3.4rem,6vw,6.5rem)] font-semibold leading-[.9] tracking-[-.09em]">Give the brain<br /><span className="text-[hsl(var(--sidebar-primary))]">a place to remember.</span></h1>
+            <p className="mt-7 max-w-[480px] text-[14px] leading-7 text-[hsl(var(--sidebar-foreground)/.62)]">Create a small local account so your conversation can follow you. The language model stays shared; your words and snapshots stay private.</p>
+          </div>
+          <div className="relative z-10 mt-auto flex items-end justify-between border-t border-[hsl(var(--sidebar-border))] pt-5">
+            <div className="mono text-[9px] uppercase tracking-[.14em] text-[hsl(var(--sidebar-foreground)/.36)]">local account flow / 01</div>
+            <div className="flex items-center gap-2 text-[10px] text-[hsl(var(--sidebar-foreground)/.48)]"><div className="living-dot h-1.5 w-1.5 rounded-full bg-[hsl(var(--sidebar-primary))]" />private by default</div>
+          </div>
+          <div className="pointer-events-none absolute right-[11%] top-[22%] h-64 w-64 rounded-full border border-[hsl(var(--sidebar-primary)/.18)]"><div className="orbit-line absolute inset-[-1px] rounded-full border-t border-[hsl(var(--sidebar-primary)/.65)]" /><div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-[30px] border border-[hsl(var(--sidebar-primary)/.35)] bg-[hsl(var(--sidebar-primary)/.08)] text-[hsl(var(--sidebar-primary))]"><BrainCircuit className="h-10 w-10" /><span className="absolute -right-2 top-2 h-2 w-2 rounded-full bg-[hsl(var(--accent))]" /></div><div className="absolute left-[12%] top-[20%] h-2 w-2 rounded-full bg-[hsl(var(--accent))]" /><div className="absolute bottom-[16%] right-[8%] h-1.5 w-1.5 rounded-full bg-[hsl(var(--chart-3))]" /></div>
+          <div className="scan-line pointer-events-none absolute left-0 right-0 top-1/2 h-px bg-[hsl(var(--sidebar-primary)/.22)]" />
+        </section>
+
+        <main className="flex min-h-[100dvh] items-center justify-center px-5 py-8 sm:px-10">
+          <div className="w-full max-w-[390px]">
+            <div className="mb-9 flex items-center gap-3 lg:hidden"><BrandMark /><div><div className="display text-[15px] font-bold">bigram<span className="text-[hsl(var(--primary))]">.</span>ai</div><div className="mono text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">a tiny language engine</div></div></div>
+            <div className="reveal">
+              <div className="mono text-[10px] uppercase tracking-[.18em] text-[hsl(var(--primary))]">{mode === 'create' ? 'new account' : 'welcome back'}</div>
+              <h2 data-testid="text-account-title" className="display mt-3 text-[clamp(2.2rem,5vw,3.4rem)] font-semibold leading-[.96] tracking-[-.075em]">{mode === 'create' ? 'Start with a blank brain.' : 'Return to your brain.'}</h2>
+              <p className="mt-4 text-sm leading-6 text-[hsl(var(--muted-foreground))]">{mode === 'create' ? 'One username. One private conversation. No social profile attached.' : 'Sign in to restore the conversation you have been teaching.'}</p>
+            </div>
+
+            <div className="mt-8 flex rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--muted)/.48)] p-1">
+              <button data-testid="button-mode-sign-in" type="button" onClick={() => { setMode('signin'); setFormError(''); }} className={`flex-1 rounded-lg px-3 py-2.5 text-xs font-bold transition ${mode === 'signin' ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[var(--shadow-sm)]' : 'text-[hsl(var(--muted-foreground))]'}`}>Sign in</button>
+              <button data-testid="button-mode-create-account" type="button" onClick={() => { setMode('create'); setFormError(''); }} className={`flex-1 rounded-lg px-3 py-2.5 text-xs font-bold transition ${mode === 'create' ? 'bg-[hsl(var(--card))] text-[hsl(var(--foreground))] shadow-[var(--shadow-sm)]' : 'text-[hsl(var(--muted-foreground))]'}`}>Create account</button>
+            </div>
+
+            <form onSubmit={submit} className="mt-7 space-y-4">
+              <label className="block"><span className="mono mb-2 block text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">username</span><div className="relative"><UserRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(var(--muted-foreground)/.7)]" /><input data-testid="input-username" value={username} onChange={(event) => setUsername(event.target.value)} autoComplete="username" maxLength={32} placeholder="your-name" className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--card))] py-3.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground)/.55)] focus:border-[hsl(var(--primary)/.65)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></div></label>
+              <label className="block"><span className="mono mb-2 block text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">password</span><div className="relative"><KeyRound className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(var(--muted-foreground)/.7)]" /><input data-testid="input-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete={mode === 'create' ? 'new-password' : 'current-password'} maxLength={128} placeholder="8 characters minimum" className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--card))] py-3.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground)/.55)] focus:border-[hsl(var(--primary)/.65)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></div></label>
+              {mode === 'create' && <label className="block"><span className="mono mb-2 block text-[9px] uppercase tracking-[.14em] text-[hsl(var(--muted-foreground))]">confirm password</span><div className="relative"><ShieldCheck className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(var(--muted-foreground)/.7)]" /><input data-testid="input-confirm-password" type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} autoComplete="new-password" maxLength={128} placeholder="repeat your password" className="w-full rounded-xl border border-[hsl(var(--input))] bg-[hsl(var(--card))] py-3.5 pl-10 pr-4 text-sm outline-none transition placeholder:text-[hsl(var(--muted-foreground)/.55)] focus:border-[hsl(var(--primary)/.65)] focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" /></div></label>}
+              {(formError || initialMessage) && <div data-testid="status-auth-error" className="flex items-start gap-2 rounded-xl border border-[hsl(var(--destructive)/.22)] bg-[hsl(var(--destructive)/.06)] px-3.5 py-3 text-xs leading-5 text-[hsl(var(--destructive))]"><TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" />{formError || initialMessage}</div>}
+              <button data-testid="button-submit-auth" type="submit" disabled={isPending} className="group flex w-full items-center justify-center gap-2 rounded-xl bg-[hsl(var(--primary))] px-4 py-3.5 text-sm font-bold text-[hsl(var(--primary-foreground))] transition hover:-translate-y-0.5 hover:brightness-110 focus:outline-none focus:ring-4 focus:ring-[hsl(var(--primary)/.18)] disabled:cursor-not-allowed disabled:opacity-55">{isPending ? 'Opening private memory…' : mode === 'create' ? 'Create my account' : 'Sign in'}{!isPending && <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />}</button>
+            </form>
+            <div className="mt-7 flex items-start gap-2.5 border-t border-[hsl(var(--border))] pt-5 text-[10px] leading-5 text-[hsl(var(--muted-foreground))]"><ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[hsl(var(--primary))]" /><span>Your conversation is restored from a private account space. Bigram's shared model is separate from your memory.</span></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
 function MobileMenu({ onClose }: { onClose: () => void }) {
   const [location, navigate] = useLocation();
+  const { username, signOut, signingOut } = useAuth();
   const goTo = (path: string) => {
     navigate(path);
     onClose();
   };
 
-  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><button onClick={() => goTo('/')} className={`mt-14 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
+  return <div className="fixed inset-0 z-30 bg-[hsl(var(--sidebar))] p-5 text-[hsl(var(--sidebar-foreground))] lg:hidden"><div className="flex items-center justify-between"><div className="flex items-center gap-3"><BrandMark /><span className="display font-bold">bigram<span className="text-[hsl(var(--sidebar-primary))]">.</span>ai</span></div><button data-testid="button-close-mobile-menu" onClick={onClose} className="rounded-lg p-2 text-[hsl(var(--sidebar-foreground)/.7)]"><X className="h-5 w-5" /></button></div><div className="mt-12 flex items-center gap-3 rounded-2xl border border-[hsl(var(--sidebar-border))] bg-[hsl(var(--sidebar-accent)/.5)] p-3"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[hsl(var(--sidebar-primary)/.14)] text-[hsl(var(--sidebar-primary))]"><UserRound className="h-3.5 w-3.5" /></div><div className="min-w-0 flex-1"><div className="mono text-[8px] uppercase tracking-[.12em] text-[hsl(var(--sidebar-foreground)/.42)]">private account</div><div data-testid="text-mobile-username" className="truncate text-[11px] font-semibold">{username}</div></div><button data-testid="button-mobile-sign-out" type="button" onClick={signOut} disabled={signingOut} className="rounded-lg p-1.5 text-[hsl(var(--sidebar-foreground)/.58)]"><LogOut className="h-3.5 w-3.5" /></button></div><button data-testid="button-mobile-nav-workspace" onClick={() => goTo('/')} className={`mt-7 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-semibold ${location !== '/sources' ? 'bg-[hsl(var(--sidebar-accent))]' : ''}`}><MessageSquare className="h-4 w-4 text-[hsl(var(--sidebar-primary))]" />Live conversation</button><button data-testid="button-mobile-nav-sources" onClick={() => goTo('/sources')} className={`mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm ${location === '/sources' ? 'bg-[hsl(var(--sidebar-accent))] font-semibold' : 'text-[hsl(var(--sidebar-foreground)/.68)]'}`}><BookOpen className="h-4 w-4" />Sources</button></div>;
 }
 
 function Home() {
@@ -402,12 +581,48 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
+function AuthenticatedApp({ session }: { session: { username: string } }) {
+  const queryClient = useQueryClient();
+  const logout = useLogout();
+  const signOut = () => {
+    if (logout.isPending) return;
+    logout.mutate(undefined, {
+      onSuccess: (nextSession) => {
+        queryClient.setQueryData(getGetAuthSessionQueryKey(), nextSession);
+        queryClient.invalidateQueries({ queryKey: getGetAuthSessionQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBrainMessagesQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBrainOverviewQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBrainSnapshotsQueryKey() });
+        queryClient.invalidateQueries({ queryKey: getGetBrainGithubQueryKey() });
+      },
+    });
+  };
+
+  return <AuthContext.Provider value={{ username: session.username, signOut, signingOut: logout.isPending }}><Router /></AuthContext.Provider>;
+}
+
+function AuthAwareApp({ disclaimerAcknowledged }: { disclaimerAcknowledged: boolean }) {
+  const queryClient = useQueryClient();
+  const authQuery = useGetAuthSession({
+    query: {
+      queryKey: getGetAuthSessionQueryKey(),
+      enabled: disclaimerAcknowledged,
+      retry: false,
+    },
+  });
+
+  if (!disclaimerAcknowledged || authQuery.isLoading) return <SessionLoading />;
+  if (authQuery.data?.authenticated && authQuery.data.username) return <AuthenticatedApp session={{ username: authQuery.data.username }} />;
+  return <AccountGate initialMessage={authQuery.isError ? 'The account service is taking a moment. Try again when it is ready.' : authQuery.data?.message} onAuthenticated={(nextSession) => queryClient.setQueryData(getGetAuthSessionQueryKey(), nextSession)} />;
+}
+
 function Router() {
   return <RoutedErrorBoundary><Switch><Route path="/" component={Home} /><Route path="/sources" component={SourcesPage} /><Route component={NotFound} /></Switch></RoutedErrorBoundary>;
 }
 
 function App() {
-  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><Router /></WouterRouter><Toaster /><DisclaimerModal /></TooltipProvider></QueryClientProvider>;
+  const [disclaimerAcknowledged, setDisclaimerAcknowledged] = useState(readDisclaimerAcknowledged);
+  return <QueryClientProvider client={queryClient}><TooltipProvider><WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}><AuthAwareApp disclaimerAcknowledged={disclaimerAcknowledged} /></WouterRouter><Toaster /><DisclaimerModal onDismiss={() => setDisclaimerAcknowledged(true)} /></TooltipProvider></QueryClientProvider>;
 }
 
 export default App;

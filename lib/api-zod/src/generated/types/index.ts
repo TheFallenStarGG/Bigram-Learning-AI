@@ -6,6 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './accountInput';
+export * from './authSession';
 export * from './brainOverview';
 export * from './chatInput';
 export * from './chatMessage';

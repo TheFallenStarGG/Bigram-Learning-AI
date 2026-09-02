@@ -3,7 +3,6 @@ import path from "node:path";
 import { desc, eq } from "drizzle-orm";
 import {
   brainStateTable,
-  chatMessagesTable,
   db,
   githubSettingsTable,
   modelSnapshotsTable,
@@ -14,6 +13,11 @@ import {
   getLatestSnapshotFromGithub,
   pushSnapshotToGithub,
 } from "./github";
+import {
+  readAccountChat,
+  writeAccountChat,
+  type StoredChatMessage,
+} from "./auth-service";
 import { logger } from "./logger";
 
 const START = "__START__";
@@ -262,21 +266,12 @@ export async function getOverview(): Promise<BrainOverview> {
   };
 }
 
-export async function getMessages(): Promise<PublicMessage[]> {
-  await ensureRemoteSnapshotLoaded();
-  const rows = await db
-    .select()
-    .from(chatMessagesTable)
-    .orderBy(chatMessagesTable.createdAt);
-  return rows.map((row) => ({
-    id: row.id,
-    role: row.role === "user" ? "user" : "assistant",
-    content: row.content,
-    createdAt: row.createdAt.toISOString(),
-  }));
+export async function getMessages(username: string): Promise<PublicMessage[]> {
+  const messages = await readAccountChat(username);
+  return messages;
 }
 
-export async function sendMessage(prompt: string) {
+export async function sendMessage(username: string, prompt: string) {
   await ensureRemoteSnapshotLoaded();
   const state = await getState();
   learn(state, prompt);
@@ -294,10 +289,19 @@ export async function sendMessage(prompt: string) {
     createdAt: new Date(),
   };
 
-  await db.insert(chatMessagesTable).values([
-    userMessage,
-    assistantMessage,
-  ]);
+  const existingMessages = await readAccountChat(username);
+  const messages: StoredChatMessage[] = [
+    ...existingMessages,
+    {
+      ...userMessage,
+      createdAt: userMessage.createdAt.toISOString(),
+    },
+    {
+      ...assistantMessage,
+      createdAt: assistantMessage.createdAt.toISOString(),
+    },
+  ];
+  await writeAccountChat(username, messages);
   await saveState(state);
   return {
     userMessage: {
@@ -331,7 +335,7 @@ export async function getSnapshots(): Promise<PublicSnapshot[]> {
 
 export async function createSnapshot(): Promise<PublicSnapshot> {
   const state = await getState();
-  const [github, messages] = await Promise.all([getGithubRow(), getMessages()]);
+  const github = await getGithubRow();
   const createdAt = new Date();
   const id = crypto.randomUUID();
   const filename = `bigram-model-${createdAt
@@ -346,7 +350,7 @@ export async function createSnapshot(): Promise<PublicSnapshot> {
       messageCount: state.messageCount,
       learningStartedAt: state.learningStartedAt.toISOString(),
     },
-    messages,
+    messages: [],
     github: {
       configured: github.configured,
       owner: github.owner,
@@ -551,14 +555,10 @@ async function syncStateFromLatestRemoteSnapshot() {
       })
       .where(eq(brainStateTable.id, 1));
 
-    await transaction.delete(chatMessagesTable);
-    if (messages.length > 0) {
-      await transaction.insert(chatMessagesTable).values(messages);
-    }
   });
 
   logger.info(
-    { filename: latest.filename, messages: messages.length },
+    { filename: latest.filename },
     "Loaded latest model snapshot from GitHub",
   );
 }

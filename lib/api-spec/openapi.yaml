@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Local username and password account operations
   - name: brain
     description: Bigram model and conversation operations
 paths:
@@ -26,6 +28,74 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/session:
+    get:
+      operationId: getAuthSession
+      tags: [auth]
+      summary: Get the current local account session
+      responses:
+        "200":
+          description: Current account session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+  /auth/signup:
+    post:
+      operationId: signup
+      tags: [auth]
+      summary: Create a local username and password account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountInput"
+      responses:
+        "200":
+          description: Created account session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "400":
+          description: Invalid account details
+        "409":
+          description: Username already exists
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Sign in to a local account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountInput"
+      responses:
+        "200":
+          description: Account session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
+        "400":
+          description: Invalid account details
+        "401":
+          description: Invalid username or password
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Sign out of the current local account
+      responses:
+        "200":
+          description: Signed-out session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthSession"
   /brain/overview:
     get:
       operationId: getBrainOverview
@@ -135,6 +205,29 @@ components:
           type: string
       required:
         - status
+    AuthSession:
+      type: object
+      required: [authenticated, username]
+      properties:
+        authenticated:
+          type: boolean
+        username:
+          type: ["string", "null"]
+        message:
+          type: string
+    AccountInput:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 32
+          pattern: "^[A-Za-z0-9_-]+$"
+        password:
+          type: string
+          minLength: 8
+          maxLength: 128
     ChatMessage:
       type: object
       required: [id, role, content, createdAt]
