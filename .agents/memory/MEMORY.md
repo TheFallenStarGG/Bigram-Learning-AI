@@ -1,1 +1,2 @@
 - [Zod/OpenAPI compatibility](zod-codegen-compatibility.md) — current generated clients require avoiding integer schemas with the workspace's Zod 3 catalog.
+- [Imported artifact runtime](imported-artifact-runtime.md) — restart managed services after imports or source updates; account-authorized connectors may still need environment attachment.
