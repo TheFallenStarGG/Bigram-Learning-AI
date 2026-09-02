@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent, type ReactNode } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   AlertTriangle,
+  ArrowLeft,
   Ban,
   BrainCircuit,
   Check,
@@ -17,6 +18,7 @@ import {
   UserRound,
   X,
 } from 'lucide-react';
+import { useLocation } from 'wouter';
 import {
   getGetAdminAccountsQueryKey,
   getGetAdminChatQueryKey,
@@ -232,6 +234,7 @@ function BanDialog({ account, pending, error, onCancel, onConfirm }: { account: 
 }
 
 export default function AdminPage() {
+  const [, navigate] = useLocation();
   const queryClient = useQueryClient();
   const accountsQuery = useGetAdminAccounts({ query: { queryKey: getGetAdminAccountsQueryKey(), retry: false } });
   const chatsQuery = useGetAdminChats({ query: { queryKey: getGetAdminChatsQueryKey(), retry: false } });
@@ -297,7 +300,12 @@ export default function AdminPage() {
             <h1 data-testid="text-admin-page-title" className="display text-[clamp(2rem,4vw,3.45rem)] font-semibold leading-[.98] tracking-[-.075em]">Keep the small brain<br /><span className="text-[hsl(var(--primary))]">carefully observable.</span></h1>
             <p className="mt-4 max-w-[600px] text-sm leading-relaxed text-[hsl(var(--muted-foreground))]">Review conversations that include Little Brain, make account actions deliberate, and keep the boundary around private memory visible.</p>
           </div>
-          <div data-testid="status-admin-scope" className="flex max-w-xs items-start gap-2.5 rounded-2xl border border-[hsl(var(--accent)/.25)] bg-[hsl(var(--accent)/.08)] px-3.5 py-3 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--accent))]" />This view is limited to AI-involving conversations. User-only rooms never appear here.</div>
+           <div className="flex flex-wrap items-center gap-3 md:flex-col md:items-end">
+             <button data-testid="button-admin-back" type="button" onClick={() => navigate('/')} className="inline-flex items-center gap-2 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] px-3.5 py-2.5 text-[10px] font-bold text-[hsl(var(--foreground))] shadow-[var(--shadow-sm)] transition hover:-translate-y-0.5 hover:border-[hsl(var(--primary)/.45)] hover:text-[hsl(var(--primary))]">
+               <ArrowLeft className="h-3.5 w-3.5" />Back to workspace
+             </button>
+             <div data-testid="status-admin-scope" className="flex max-w-xs items-start gap-2.5 rounded-2xl border border-[hsl(var(--accent)/.25)] bg-[hsl(var(--accent)/.08)] px-3.5 py-3 text-[10px] leading-relaxed text-[hsl(var(--muted-foreground))]"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--accent))]" />This view is limited to AI-involving conversations. User-only rooms never appear here.</div>
+           </div>
         </header>
 
         <div className="reveal grid grid-cols-2 gap-2.5 md:grid-cols-4" style={{ animationDelay: '.06s' }}>
