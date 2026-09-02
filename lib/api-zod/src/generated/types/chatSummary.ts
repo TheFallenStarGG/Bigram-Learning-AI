@@ -13,6 +13,7 @@ export interface ChatSummary {
   id: string;
   type: ChatSummaryType;
   title: string;
+  ownerUsername: string;
   participants: ChatParticipant[];
   includeBrain: boolean;
   createdAt: string;

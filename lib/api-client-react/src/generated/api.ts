@@ -33,6 +33,7 @@ import type {
   GithubSettingsInput,
   HealthStatus,
   ModelSnapshot,
+  RenameChatInput,
   SendChatMessageInput
 } from './api.schemas';
 
@@ -1176,6 +1177,78 @@ export function useGetChat<TData = Awaited<ReturnType<typeof getChat>>, TError =
 
 
 
+
+export const getRenameChatUrl = (chatId: string,) => {
+
+
+
+
+  return `/api/chats/${chatId}`
+}
+
+/**
+ * @summary Rename a group chat as its owner
+ */
+export const renameChat = async (chatId: string,
+    renameChatInput: RenameChatInput, options?: Parameters<typeof customFetch>[1]): Promise<ChatDetail> => {
+
+  return customFetch<ChatDetail>(getRenameChatUrl(chatId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(renameChatInput)
+  }
+);}
+
+
+
+
+
+export const getRenameChatMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof renameChat>>, TError,{chatId: string;data: BodyType<RenameChatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof renameChat>>, TError,{chatId: string;data: BodyType<RenameChatInput>}, TContext> => {
+
+const mutationKey = ['renameChat'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof renameChat>>, {chatId: string;data: BodyType<RenameChatInput>}> = (props) => {
+          const {chatId,data} = props ?? {};
+
+          return  renameChat(chatId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RenameChatMutationResult = NonNullable<Awaited<ReturnType<typeof renameChat>>>
+    export type RenameChatMutationBody = BodyType<RenameChatInput>
+    export type RenameChatMutationError = ErrorType<void>
+
+    /**
+ * @summary Rename a group chat as its owner
+ */
+export const useRenameChat = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof renameChat>>, TError,{chatId: string;data: BodyType<RenameChatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof renameChat>>,
+        TError,
+        {chatId: string;data: BodyType<RenameChatInput>},
+        TContext
+      > => {
+      return useMutation(getRenameChatMutationOptions(options));
+    }
 
 export const getSendChatMessageUrl = (chatId: string,) => {
 

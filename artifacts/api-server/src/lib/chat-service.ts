@@ -20,6 +20,7 @@ export type ChatSummary = {
   id: string;
   type: ChatType;
   title: string;
+  ownerUsername: string;
   participants: ChatParticipant[];
   includeBrain: boolean;
   createdAt: string;
@@ -49,6 +50,13 @@ export class ChatNotFoundError extends Error {
   constructor() {
     super("That chat could not be found.");
     this.name = "ChatNotFoundError";
+  }
+}
+
+export class ChatPermissionError extends Error {
+  constructor(message = "Only the group owner can rename this chat.") {
+    super(message);
+    this.name = "ChatPermissionError";
   }
 }
 
@@ -99,7 +107,8 @@ function toPublic(room: StoredChatRoom): ChatDetail {
             (participant) =>
               !participant.isBrain && participant.username !== room.createdBy,
           )?.displayName ?? "Private chat"
-        : "Group chat",
+        : room.title?.trim() || "Group chat",
+    ownerUsername: room.createdBy,
     participants,
     includeBrain: room.includeBrain,
     createdAt: room.createdAt,
@@ -204,6 +213,24 @@ export async function sendChatMessage(username: string, chatId: string, content:
     });
   }
 
+  room.updatedAt = new Date().toISOString();
+  await writeChatRoom(room);
+  return toPublic(room);
+}
+
+export async function renameChat(username: string, chatId: string, title: string) {
+  const room = await getAuthorizedRoom(username, chatId);
+  if (room.type !== "group") {
+    throw new ChatInputError("Only group chats can be renamed.");
+  }
+  if (room.createdBy !== username) {
+    throw new ChatPermissionError();
+  }
+  const nextTitle = title.trim();
+  if (!nextTitle) {
+    throw new ChatInputError("A group chat name cannot be empty.");
+  }
+  room.title = nextTitle;
   room.updatedAt = new Date().toISOString();
   await writeChatRoom(room);
   return toPublic(room);

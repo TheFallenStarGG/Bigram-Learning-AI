@@ -253,6 +253,35 @@ paths:
                 $ref: "#/components/schemas/ChatDetail"
         "404":
           description: Chat not found
+    patch:
+      operationId: renameChat
+      tags: [chats]
+      summary: Rename a group chat as its owner
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RenameChatInput"
+      responses:
+        "200":
+          description: Renamed chat detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatDetail"
+        "400":
+          description: Invalid chat name or unsupported chat type
+        "403":
+          description: Only the group owner can rename this chat
+        "404":
+          description: Chat not found
   /chats/{chatId}/messages:
     post:
       operationId: sendChatMessage
@@ -444,7 +473,7 @@ components:
           type: string
     ChatSummary:
       type: object
-      required: [id, type, title, participants, includeBrain, createdAt, updatedAt, lastMessage]
+      required: [id, type, title, ownerUsername, participants, includeBrain, createdAt, updatedAt, lastMessage]
       properties:
         id:
           type: string
@@ -452,6 +481,8 @@ components:
           type: string
           enum: [private, group]
         title:
+          type: string
+        ownerUsername:
           type: string
         participants:
           type: array
@@ -502,4 +533,12 @@ components:
           type: string
           minLength: 1
           maxLength: 2000
+    RenameChatInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 80
 

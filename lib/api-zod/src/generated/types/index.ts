@@ -25,4 +25,5 @@ export * from './healthStatus';
 export * from './modelSnapshot';
 export * from './modelSnapshotStatus';
 export * from './privateChatMessage';
+export * from './renameChatInput';
 export * from './sendChatMessageInput';

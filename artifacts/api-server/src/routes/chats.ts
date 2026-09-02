@@ -4,6 +4,8 @@ import {
   CreateChatResponse,
   GetChatResponse,
   GetChatsResponse,
+  RenameChatBody,
+  RenameChatResponse,
   SendChatMessageBody,
   SendChatMessageResponse,
 } from "@workspace/api-zod";
@@ -11,9 +13,11 @@ import {
   ChatInputError,
   ChatNotFoundError,
   ChatParticipantNotFoundError,
+  ChatPermissionError,
   createChat,
   getChat,
   getChats,
+  renameChat,
   sendChatMessage,
 } from "../lib/chat-service";
 import { readSessionCookie } from "../lib/auth-service";
@@ -46,6 +50,10 @@ function handleChatError(error: unknown, res: Response) {
     res.status(404).json({ error: error.message });
     return true;
   }
+  if (error instanceof ChatPermissionError) {
+    res.status(403).json({ error: error.message });
+    return true;
+  }
   return false;
 }
 
@@ -75,6 +83,21 @@ router.get("/chats/:chatId", async (req, res, next) => {
     const username = requireUsername(req, res);
     if (!username) return;
     res.json(GetChatResponse.parse(await getChat(username, req.params.chatId)));
+  } catch (error) {
+    if (!handleChatError(error, res)) next(error);
+  }
+});
+
+router.patch("/chats/:chatId", async (req, res, next) => {
+  try {
+    const username = requireUsername(req, res);
+    if (!username) return;
+    const input = RenameChatBody.parse(req.body);
+    res.json(
+      RenameChatResponse.parse(
+        await renameChat(username, req.params.chatId, input.title),
+      ),
+    );
   } catch (error) {
     if (!handleChatError(error, res)) next(error);
   }

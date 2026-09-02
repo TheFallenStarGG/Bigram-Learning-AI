@@ -141,6 +141,7 @@ export interface ChatSummary {
   id: string;
   type: ChatSummaryType;
   title: string;
+  ownerUsername: string;
   participants: ChatParticipant[];
   includeBrain: boolean;
   createdAt: string;
@@ -178,5 +179,13 @@ export interface SendChatMessageInput {
      * @maxLength 2000
      */
   content: string;
+}
+
+export interface RenameChatInput {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  title: string;
 }
 

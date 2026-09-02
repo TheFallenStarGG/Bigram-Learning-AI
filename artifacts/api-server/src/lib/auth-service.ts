@@ -54,6 +54,7 @@ export type StoredChatRoom = {
   id: string;
   type: "private" | "group";
   createdBy: string;
+  title?: string;
   participants: StoredRoomParticipant[];
   includeBrain: boolean;
   createdAt: string;
@@ -295,6 +296,7 @@ function parseStoredRoom(value: unknown, fallbackId?: string): StoredChatRoom {
     (value.type !== "private" && value.type !== "group") ||
     !("createdBy" in value) ||
     typeof value.createdBy !== "string" ||
+    ("title" in value && value.title !== undefined && typeof value.title !== "string") ||
     !("participants" in value) ||
     !Array.isArray(value.participants) ||
     !("includeBrain" in value) ||
@@ -325,12 +327,17 @@ function parseStoredRoom(value: unknown, fallbackId?: string): StoredChatRoom {
       isBrain: participant.isBrain,
     };
   });
+  const title =
+    "title" in value && typeof value.title === "string"
+      ? value.title
+      : undefined;
 
   return {
     format: ROOM_FORMAT,
     id: value.id,
     type: value.type,
     createdBy: normalizeUsername(value.createdBy),
+    title,
     participants,
     includeBrain: value.includeBrain,
     createdAt: value.createdAt,

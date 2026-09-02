@@ -8,6 +8,7 @@ import {
   CircleDot,
   LoaderCircle,
   MessageCircle,
+  Pencil,
   Plus,
   RefreshCw,
   Send,
@@ -23,6 +24,7 @@ import {
   useCreateChat,
   useGetChat,
   useGetChats,
+  useRenameChat,
   useSendChatMessage,
   type ChatDetail,
   type ChatParticipant,
@@ -74,7 +76,7 @@ function displayName(username: string) {
 
 function BrainBadge({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`flex shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--accent)/.18)] text-[hsl(29_58%_40%)] ${compact ? 'h-8 w-8' : 'h-10 w-10'}`}>
+    <div className={`flex shrink-0 items-center justify-center rounded-xl border border-[hsl(43_82%_58%/.55)] bg-[hsl(45_90%_88%/.34)] text-[hsl(37_67%_38%)] ring-1 ring-[hsl(43_82%_58%/.16)] ${compact ? 'h-8 w-8' : 'h-10 w-10'}`}>
       <BrainCircuit className={compact ? 'h-4 w-4' : 'h-5 w-5'} />
     </div>
   );
@@ -344,12 +346,18 @@ function Conversation({
 }) {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState('');
+  const [titleDraft, setTitleDraft] = useState(chat.title);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const sendMessage = useSendChatMessage();
+  const renameChat = useRenameChat();
   const detailQuery = useGetChat(chat.id, { query: { queryKey: getGetChatQueryKey(chat.id), refetchInterval: 5000, refetchOnWindowFocus: true, retry: false } });
   const detail = detailQuery.data;
+  const canRename = chat.type === 'group' && chat.ownerUsername === username;
 
   useEffect(() => {
     setDraft('');
+    setTitleDraft(chat.title);
+    setIsEditingTitle(false);
   }, [chat.id]);
 
   const submit = (event: FormEvent) => {
@@ -376,6 +384,23 @@ function Conversation({
     }
   };
 
+  const submitRename = (event: FormEvent) => {
+    event.preventDefault();
+    const title = titleDraft.trim();
+    if (!title || renameChat.isPending) return;
+    renameChat.mutate(
+      { chatId: chat.id, data: { title } },
+      {
+        onSuccess: (result) => {
+          queryClient.setQueryData(getGetChatQueryKey(chat.id), result);
+          queryClient.invalidateQueries({ queryKey: getGetChatsQueryKey() });
+          setTitleDraft(result.title);
+          setIsEditingTitle(false);
+        },
+      },
+    );
+  };
+
   const participants = detail?.participants ?? chat.participants;
   return (
     <section className="flex min-h-[590px] min-w-0 w-full flex-1 flex-col overflow-hidden rounded-[24px] border border-[hsl(var(--border))] bg-[hsl(var(--card))] shadow-[var(--shadow-sm)] lg:min-h-0">
@@ -385,7 +410,18 @@ function Conversation({
           <div className="flex min-w-0 flex-1 items-start gap-3">
             {chat.includeBrain ? <BrainBadge /> : <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[hsl(var(--secondary))] text-[hsl(var(--secondary-foreground))]"><UsersRound className="h-5 w-5" /></div>}
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2"><h1 className="display truncate text-[16px] font-semibold tracking-[-.035em]">{chat.title || 'Private conversation'}</h1><span className="mono rounded-full bg-[hsl(var(--muted))] px-2 py-1 text-[8px] uppercase tracking-[.1em] text-[hsl(var(--muted-foreground))]">{chat.type}</span></div>
+              <div className="flex flex-wrap items-center gap-2">
+                {isEditingTitle ? (
+                  <form onSubmit={submitRename} className="flex min-w-0 flex-1 items-center gap-1.5">
+                    <input data-testid="input-group-chat-title" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} maxLength={80} autoFocus className="min-w-0 flex-1 rounded-lg border border-[hsl(var(--primary)/.45)] bg-[hsl(var(--background))] px-2.5 py-1.5 text-sm font-semibold outline-none focus:ring-4 focus:ring-[hsl(var(--primary)/.1)]" />
+                    <button type="submit" aria-label="Save group chat name" disabled={!titleDraft.trim() || renameChat.isPending} className="rounded-lg p-1.5 text-[hsl(var(--primary))] hover:bg-[hsl(var(--primary)/.08)] disabled:opacity-40"><Check className="h-3.5 w-3.5" /></button>
+                    <button type="button" aria-label="Cancel group chat rename" onClick={() => { setTitleDraft(chat.title); setIsEditingTitle(false); }} className="rounded-lg p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><X className="h-3.5 w-3.5" /></button>
+                  </form>
+                ) : (
+                  <><h1 className="display truncate text-[16px] font-semibold tracking-[-.035em]">{chat.title || 'Private conversation'}</h1>{canRename && <button type="button" aria-label="Rename group chat" onClick={() => { setTitleDraft(chat.title); setIsEditingTitle(true); }} className="rounded-lg p-1 text-[hsl(var(--muted-foreground))] transition hover:bg-[hsl(var(--muted))]"><Pencil className="h-3.5 w-3.5" /></button>}</>
+                )}
+                <span className="mono rounded-full bg-[hsl(var(--muted))] px-2 py-1 text-[8px] uppercase tracking-[.1em] text-[hsl(var(--muted-foreground))]">{chat.type}</span>
+              </div>
               <p className="mt-1 text-[10px] text-[hsl(var(--muted-foreground))]">{participants.length} {participants.length === 1 ? 'participant' : 'participants'} · messages refresh automatically</p>
             </div>
             <div className="flex shrink-0 items-center gap-1">
@@ -397,6 +433,7 @@ function Conversation({
         <div id={`participants-${chat.id}`} className="scrollbar-thin mt-4 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-0.5">
           {participants.map((person) => <div key={`${person.username}-${person.isBrain}`} className="min-w-[125px] shrink-0 rounded-xl border border-[hsl(var(--border))] bg-[hsl(var(--background)/.5)] px-2.5 py-2"><ParticipantLine person={person} signedInUsername={username} /></div>)}
         </div>
+        {renameChat.isError && <div role="alert" className="mt-3 text-[10px] text-[hsl(var(--destructive))]">{errorText(renameChat.error, 'The group name could not be updated.')}</div>}
       </header>
       <ChatMessages detail={detail} username={username} isLoading={detailQuery.isLoading} isError={detailQuery.isError} onRetry={() => detailQuery.refetch()} />
       <footer className="min-w-0 border-t border-[hsl(var(--border))] bg-[hsl(var(--card))] p-3.5 sm:p-5">

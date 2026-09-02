@@ -261,6 +261,7 @@ export const GetChatsResponseItem = zod.object({
   "id": zod.string(),
   "type": zod.enum(['private', 'group']),
   "title": zod.string(),
+  "ownerUsername": zod.string(),
   "participants": zod.array(zod.object({
   "username": zod.string(),
   "displayName": zod.string(),
@@ -304,6 +305,7 @@ export const CreateChatResponse = zod.object({
   "id": zod.string(),
   "type": zod.enum(['private', 'group']),
   "title": zod.string(),
+  "ownerUsername": zod.string(),
   "participants": zod.array(zod.object({
   "username": zod.string(),
   "displayName": zod.string(),
@@ -347,6 +349,59 @@ export const GetChatResponse = zod.object({
   "id": zod.string(),
   "type": zod.enum(['private', 'group']),
   "title": zod.string(),
+  "ownerUsername": zod.string(),
+  "participants": zod.array(zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+})),
+  "includeBrain": zod.boolean(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string(),
+  "lastMessage": zod.union([zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}),zod.null()])
+}).and(zod.object({
+  "messages": zod.array(zod.object({
+  "id": zod.string(),
+  "sender": zod.object({
+  "username": zod.string(),
+  "displayName": zod.string(),
+  "isBrain": zod.boolean()
+}),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+}))
+
+
+/**
+ * @summary Rename a group chat as its owner
+ */
+export const RenameChatParams = zod.object({
+  "chatId": zod.coerce.string()
+})
+
+export const renameChatBodyTitleMax = 80;
+
+
+
+export const RenameChatBody = zod.object({
+  "title": zod.string().min(1).max(renameChatBodyTitleMax)
+})
+
+export const RenameChatResponse = zod.object({
+  "id": zod.string(),
+  "type": zod.enum(['private', 'group']),
+  "title": zod.string(),
+  "ownerUsername": zod.string(),
   "participants": zod.array(zod.object({
   "username": zod.string(),
   "displayName": zod.string(),
@@ -398,6 +453,7 @@ export const SendChatMessageResponse = zod.object({
   "id": zod.string(),
   "type": zod.enum(['private', 'group']),
   "title": zod.string(),
+  "ownerUsername": zod.string(),
   "participants": zod.array(zod.object({
   "username": zod.string(),
   "displayName": zod.string(),
